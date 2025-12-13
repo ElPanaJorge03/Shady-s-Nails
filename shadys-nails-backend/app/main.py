@@ -1,0 +1,57 @@
+from fastapi import FastAPI
+from sqlalchemy import text
+
+from app.database import engine, Base
+
+# 🔹 IMPORTANTE: importar CLASES, no archivos
+from app.models.customer import Customer
+print("🧪 Customer cargado:", Customer)
+
+from app.models.worker import Worker
+from app.models.service import Service
+from app.models.additional import Additional
+from app.models.appointment import Appointment
+
+
+
+from app.routers.appointment import router as appointment_router
+
+
+
+
+# ─────────────────────────────────────────────
+# Verificar conexión real a la base de datos
+# ─────────────────────────────────────────────
+with engine.connect() as conn:
+    result = conn.execute(text("SELECT current_database(), current_schema();"))
+    for row in result:
+        print("📌 BASE REAL:", row)
+
+
+# ─────────────────────────────────────────────
+# Crear aplicación FastAPI
+# ─────────────────────────────────────────────
+app = FastAPI(
+    title="Shadys Nails API",
+    version="0.1.0"
+)
+
+app.include_router(appointment_router)
+# ─────────────────────────────────────────────
+# Crear tablas en PostgreSQL
+# ─────────────────────────────────────────────
+print("📦 Tablas registradas en metadata:", Base.metadata.tables.keys())
+
+Base.metadata.create_all(bind=engine)
+
+print("🛠️ create_all ejecutado correctamente")
+
+
+# ─────────────────────────────────────────────
+# Endpoint raíz
+# ─────────────────────────────────────────────
+@app.get("/")
+def root():
+    return {
+        "msg": "Shadys Nails API funcionando correctamente 💅"
+    }
