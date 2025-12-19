@@ -1,19 +1,16 @@
-# Core Framework
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+# FastAPI & Server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
 
 # Database
-sqlalchemy==2.0.23
-psycopg2-binary==2.9.9
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9
 
-# Environment Variables
-python-dotenv==1.0.0
+# Environment & Settings
+python-dotenv>=1.0.1
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
 
-# Data Validation
-pydantic==2.5.0
-
-# HTTP Requests (for testing)
-requests==2.32.3
-
-# Additional dependencies
-python-multipart==0.0.6
+# HTTP Client
+requests>=2.31.0
