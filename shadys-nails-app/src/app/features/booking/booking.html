@@ -1,0 +1,143 @@
+<div class="booking-container">
+    <div class="booking-card">
+        <div class="booking-header">
+            <button class="btn-back" (click)="cancel()">← Volver</button>
+            <h1>📅 Agendar Cita</h1>
+        </div>
+
+        <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+
+            <!-- PASO 1: Servicio -->
+            <div class="step-section">
+                <h2>1. Selecciona tu servicio</h2>
+
+                <div *ngIf="loading" class="loading-message">
+                    Cargando servicios...
+                </div>
+
+                <div class="service-selector" *ngIf="!loading">
+                    <div *ngFor="let service of services" class="service-option"
+                        [class.selected]="bookingForm.get('serviceId')?.value == service.id"
+                        (click)="bookingForm.patchValue({serviceId: service.id}); onServiceChange()">
+                        <div class="service-name">{{ service.name }}</div>
+                        <div class="service-details">
+                            <span class="duration">⏱️ {{ service.duration_minutes }} min</span>
+                            <span class="price">${{ service.price | number }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="!loading && services.length === 0" class="info-message">
+                    No hay servicios disponibles
+                </div>
+            </div>
+
+            <!-- PASO 2: Adicional (opcional) -->
+            <div class="step-section" *ngIf="selectedService">
+                <h2>2. ¿Deseas agregar algo extra? (opcional)</h2>
+                <div class="additional-selector">
+                    <div class="additional-option" [class.selected]="!bookingForm.get('additionalId')?.value"
+                        (click)="bookingForm.patchValue({additionalId: ''}); loadAvailableSlots()">
+                        <div class="additional-name">Sin adicional</div>
+                    </div>
+                    <div *ngFor="let additional of additionals" class="additional-option"
+                        [class.selected]="bookingForm.get('additionalId')?.value == additional.id"
+                        (click)="bookingForm.patchValue({additionalId: additional.id}); loadAvailableSlots()">
+                        <div class="additional-name">{{ additional.name }}</div>
+                        <div class="additional-details">
+                            <span class="duration">+{{ additional.extra_duration }} min</span>
+                            <span class="price">+${{ additional.price | number }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="summary-box" *ngIf="selectedService">
+                    <strong>Resumen:</strong> {{ getSelectedServiceInfo() }}
+                </div>
+            </div>
+
+            <!-- PASO 3: Fecha - Vista de 15 días -->
+            <div class="step-section" *ngIf="selectedService">
+                <h2>3. Elige la fecha</h2>
+
+                <div class="days-scroll">
+                    <div *ngFor="let day of calendarDays" class="day-card" [class.today]="day.isToday"
+                        [class.selected]="day.isSelected" (click)="selectDate(day)">
+                        <div class="day-name">{{ day.dayName }}</div>
+                        <div class="day-number">{{ day.day }}</div>
+                        <div class="month-name">{{ day.monthName }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 4: Hora -->
+            <div class="step-section" *ngIf="selectedDate">
+                <h2>4. Selecciona la hora</h2>
+
+                <div class="info-message" *ngIf="availableSlots.length === 0">
+                    No hay horarios disponibles para esta fecha. Intenta con otra fecha.
+                </div>
+
+                <div class="time-grid" *ngIf="availableSlots.length > 0">
+                    <div *ngFor="let group of getTimeSlotGroups()" class="time-group">
+                        <div class="group-label">{{ group.label }}</div>
+                        <div class="group-slots">
+                            <button type="button" *ngFor="let slot of group.slots" class="time-slot"
+                                [class.selected]="isTimeSelected(slot.time)" (click)="selectTime(slot)">
+                                {{ slot.time }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 5: Datos del cliente -->
+            <div class="step-section" *ngIf="bookingForm.get('time')?.value">
+                <h2>5. Tus datos de contacto</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre completo *</label>
+                        <input type="text" formControlName="customerName" placeholder="María García">
+                        <span class="error-text"
+                            *ngIf="bookingForm.get('customerName')?.invalid && bookingForm.get('customerName')?.touched">
+                            Campo requerido
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Teléfono *</label>
+                        <input type="tel" formControlName="customerPhone" placeholder="3001234567">
+                        <span class="error-text"
+                            *ngIf="bookingForm.get('customerPhone')?.invalid && bookingForm.get('customerPhone')?.touched">
+                            Debe ser un número de 10 dígitos
+                        </span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" formControlName="customerEmail" placeholder="maria@example.com">
+                        <span class="error-text"
+                            *ngIf="bookingForm.get('customerEmail')?.invalid && bookingForm.get('customerEmail')?.touched">
+                            Email inválido
+                        </span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas (opcional)</label>
+                    <textarea formControlName="notes" rows="3"
+                        placeholder="Alguna preferencia o comentario..."></textarea>
+                </div>
+
+                <!-- Botón de confirmar -->
+                <button type="submit" class="btn-confirm" [disabled]="bookingForm.invalid || loading">
+                    <span *ngIf="!loading">✓ Confirmar Cita</span>
+                    <span *ngIf="loading">Agendando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

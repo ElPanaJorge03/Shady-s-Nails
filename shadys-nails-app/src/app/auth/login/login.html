@@ -1,0 +1,46 @@
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>💅 Shady's Nails</h1>
+            <p>Iniciar Sesión</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" formControlName="email" placeholder="tu@email.com"
+                    [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" />
+                <span class="error-message" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+                    Email inválido
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" formControlName="password" placeholder="••••••••"
+                    [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" />
+                <span class="error-message"
+                    *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                    Mínimo 6 caracteres
+                </span>
+            </div>
+
+            <app-loading-spinner *ngIf="loading" [overlay]="true" message="Iniciando sesión..."></app-loading-spinner>
+
+            <button type="submit" [disabled]="loginForm.invalid || loading" class="btn-login">
+                <span *ngIf="!loading">Iniciar Sesión</span>
+                <span *ngIf="loading">Iniciando...</span>
+            </button>
+        </form>
+
+        <div class="register-link">
+            ¿No tienes cuenta? <a routerLink="/register">Regístrate aquí</a>
+        </div>
+
+        <div class="demo-credentials">
+            <p><strong>Credenciales de prueba:</strong></p>
+            <p>Email: gina.paola@shadysnails.com</p>
+            <p>Password: gina123</p>
+        </div>
+    </div>
+</div>

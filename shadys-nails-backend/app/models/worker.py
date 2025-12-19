@@ -10,9 +10,14 @@ class Worker(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     phone = Column(String(20))
-    email = Column(String(100))
+    email = Column(String(100), unique=True)
     business_name = Column(String(100))
     state = Column(Boolean, default=True)
+    
+    # Campos de autenticación
+    password_hash = Column(String(255))
+    role = Column(String(20), default='worker')  # 'worker' o 'admin'
+
 
     # ─────────────────────────────
     # Relaciones

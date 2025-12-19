@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import os
 from sqlalchemy import text
 
 from app.database import engine, Base
@@ -15,6 +17,13 @@ from app.models.appointment import Appointment
 
 
 from app.routers.appointment import router as appointment_router
+from app.routers.availability import router as availability_router
+from app.routers.service import router as service_router
+from app.routers.worker import router as worker_router
+from app.routers.customer import router as customer_router
+from app.routers.additional import router as additional_router
+from app.routers.auth import router as auth_router
+
 
 
 
@@ -36,7 +45,23 @@ app = FastAPI(
     version="0.1.0"
 )
 
+# Configurar CORS para permitir peticiones desde Angular
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:4200,http://127.0.0.1:4200").split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Registrar routers
+app.include_router(auth_router)  # Auth debe ir primero
 app.include_router(appointment_router)
+app.include_router(availability_router)
+app.include_router(service_router)
+app.include_router(worker_router)
+app.include_router(customer_router)
+app.include_router(additional_router)
 # ─────────────────────────────────────────────
 # Crear tablas en PostgreSQL
 # ─────────────────────────────────────────────

@@ -7,6 +7,26 @@ from app.models.service import Service
 from app.models.additional import Additional
 
 
+def validate_future_date(date: date_type) -> None:
+    """
+    Valida que la fecha no sea en el pasado.
+    
+    Args:
+        date: Fecha de la cita
+        
+    Raises:
+        HTTPException 400: Si la fecha es en el pasado
+    """
+    today = date_type.today()
+    
+    if date < today:
+        raise HTTPException(
+            status_code=400,
+            detail="No se pueden crear citas en fechas pasadas"
+        )
+
+
+
 def calculate_end_time(start_time: time, duration_minutes: int) -> time:
     """Calcula la hora de fin sumando duración a la hora de inicio"""
     dummy_date = datetime.combine(datetime.today(), start_time)

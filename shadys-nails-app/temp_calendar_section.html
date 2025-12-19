@@ -1,0 +1,13 @@
+<!-- PASO 3: Fecha -->
+<div class="step-section" *ngIf="selectedService">
+    <h2>3. Elige la fecha</h2>
+
+    <div class="days-scroll">
+        <div *ngFor="let day of calendarDays" class="day-card" [class.today]="day.isToday"
+            [class.selected]="day.isSelected" (click)="selectDate(day)">
+            <div class="day-name">{{ day.dayName }}</div>
+            <div class="day-number">{{ day.day }}</div>
+            <div class="month-name">{{ day.monthName }}</div>
+        </div>
+    </div>
+</div>

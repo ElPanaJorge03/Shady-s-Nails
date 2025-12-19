@@ -1,0 +1,58 @@
+// ==================== HORARIOS (POR DÍA) ====================
+
+.time-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.time-column {
+    background: #f8f9fa;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+    .column-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-transform: capitalize;
+    }
+
+    .column-slots {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+
+.time-slot {
+    padding: 0.875rem;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    text-align: center;
+
+    &:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+        transform: translateX(3px);
+    }
+
+    &.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        transform: scale(1.03);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+}

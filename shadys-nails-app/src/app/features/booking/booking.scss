@@ -1,0 +1,480 @@
+.booking-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.booking-card {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.booking-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .btn-back {
+        background: #f0f0f0;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+
+        &:hover {
+            background: #e0e0e0;
+        }
+    }
+
+    h1 {
+        flex: 1;
+        text-align: center;
+        color: #667eea;
+        margin: 0;
+        font-size: 2rem;
+    }
+}
+
+.success-message {
+    background: #d4edda;
+    color: #155724;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.info-message {
+    background: #fff3cd;
+    color: #856404;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.loading-message {
+    text-align: center;
+    padding: 2rem;
+    color: #667eea;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+// ==================== PASOS ====================
+
+.step-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #f0f0f0;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    h2 {
+        color: #333;
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+    }
+}
+
+// ==================== SERVICIOS ====================
+
+.service-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.service-option {
+    padding: 1.5rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+
+    &:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    &.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .service-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .service-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: #666;
+
+        .price {
+            font-weight: 600;
+            color: #667eea;
+        }
+    }
+}
+
+// ==================== ADICIONALES ====================
+
+.additional-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.additional-option {
+    padding: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+
+    &:hover {
+        border-color: #764ba2;
+        transform: translateY(-2px);
+    }
+
+    &.selected {
+        border-color: #764ba2;
+        background: rgba(118, 75, 162, 0.1);
+    }
+
+    .additional-name {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+
+    .additional-details {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #666;
+
+        .price {
+            font-weight: 600;
+            color: #764ba2;
+        }
+    }
+}
+
+.summary-box {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+    color: #495057;
+    font-size: 1.05rem;
+}
+
+// ==================== CALENDARIO (15 DÍAS) ====================
+
+.days-scroll {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #f0f0f0;
+        border-radius: 10px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #667eea;
+        border-radius: 10px;
+    }
+}
+
+.day-card {
+    min-width: 90px;
+    padding: 1.25rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: white;
+    text-align: center;
+
+    &:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
+    }
+
+    &.today {
+        border-color: #ffc107;
+        background: #fff9e6;
+
+        .day-number {
+            color: #ffc107;
+        }
+    }
+
+    &.selected {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+
+        .day-name,
+        .day-number,
+        .month-name {
+            color: white;
+        }
+    }
+
+    .day-name {
+        font-size: 0.85rem;
+        color: #666;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .day-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.25rem;
+    }
+
+    .month-name {
+        font-size: 0.75rem;
+        color: #999;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+}
+
+// ==================== HORARIOS (COLUMNAS VERTICALES) ====================
+
+.time-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.time-column {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+
+    &:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 28px rgba(102, 126, 234, 0.25);
+        border-color: #667eea;
+    }
+
+    .column-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        font-weight: 800;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+
+        &::before {
+            content: '📅';
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 2px;
+        }
+    }
+
+    .column-slots {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        background: linear-gradient(to bottom, #fafbff 0%, #f5f7ff 100%);
+        min-height: 200px;
+    }
+}
+
+.time-slot {
+    padding: 1rem 0.75rem;
+    border: 2px solid #e0e7ff;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9ff 0%, #e8ebff 100%);
+        transform: translateX(4px) scale(1.03);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    &.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: #667eea;
+        transform: scale(1.06);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        font-weight: 800;
+
+        &::before {
+            content: '✓';
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+        }
+    }
+}
+
+// ==================== FORMULARIO ====================
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 600;
+    }
+
+    input,
+    textarea {
+        width: 100%;
+        padding: 0.875rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s;
+
+        &:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    }
+
+    .error-text {
+        display: block;
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+}
+
+// ==================== BOTÓN CONFIRMAR ====================
+
+.btn-confirm {
+    width: 100%;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+// ==================== RESPONSIVE ====================
+
+@media (max-width: 768px) {
+    .booking-card {
+        padding: 1.5rem;
+    }
+
+    .service-selector,
+    .additional-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .time-columns {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 1rem;
+    }
+
+    .day-card {
+        min-width: 80px;
+    }
+}
