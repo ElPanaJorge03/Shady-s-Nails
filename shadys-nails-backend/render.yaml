@@ -1,0 +1,40 @@
+services:
+  # Backend API
+  - type: web
+    name: shadys-nails-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: shadys-nails-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: False
+      - key: CORS_ORIGINS
+        value: https://shadys-nails.netlify.app
+      - key: EMAIL_ENABLED
+        value: true
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SENDER_NAME
+        value: Shady's Nails 💅
+
+databases:
+  # PostgreSQL Database
+  - name: shadys-nails-db
+    databaseName: shadys_nails_db
+    user: shadys_nails_user
+    plan: free
+    region: oregon
