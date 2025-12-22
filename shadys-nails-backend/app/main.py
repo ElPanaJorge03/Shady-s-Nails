@@ -46,9 +46,19 @@ app = FastAPI(
 )
 
 # Configurar CORS para permitir peticiones desde Angular
+cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:4200,http://127.0.0.1:4200")
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",")]
+
+print("=" * 60)
+print("🔒 CORS CONFIGURATION")
+print("=" * 60)
+print(f"CORS_ORIGINS env var: {cors_origins_str}")
+print(f"Parsed origins: {cors_origins}")
+print("=" * 60)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:4200,http://127.0.0.1:4200").split(","),
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
