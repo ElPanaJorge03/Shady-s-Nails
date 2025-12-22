@@ -19,6 +19,15 @@ router = APIRouter(
 )
 
 
+# Explicit OPTIONS handlers for CORS preflight
+@router.options("/register")
+@router.options("/login")
+async def options_handler():
+    """Handle CORS preflight requests"""
+    return {}
+
+
+
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(
     register_data: RegisterRequest,
