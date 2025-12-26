@@ -91,40 +91,9 @@
                 </div>
             </div>
 
-            <!-- PASO 5: Datos del cliente -->
+            <!-- PASO 5: Confirmar cita -->
             <div class="step-section" *ngIf="bookingForm.get('time')?.value">
-                <h2>5. Tus datos de contacto</h2>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nombre completo *</label>
-                        <input type="text" formControlName="customerName" placeholder="María García">
-                        <span class="error-text"
-                            *ngIf="bookingForm.get('customerName')?.invalid && bookingForm.get('customerName')?.touched">
-                            Campo requerido
-                        </span>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Teléfono *</label>
-                        <input type="tel" formControlName="customerPhone" placeholder="3001234567">
-                        <span class="error-text"
-                            *ngIf="bookingForm.get('customerPhone')?.invalid && bookingForm.get('customerPhone')?.touched">
-                            Debe ser un número de 10 dígitos
-                        </span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Email *</label>
-                        <input type="email" formControlName="customerEmail" placeholder="maria@example.com">
-                        <span class="error-text"
-                            *ngIf="bookingForm.get('customerEmail')?.invalid && bookingForm.get('customerEmail')?.touched">
-                            Email inválido
-                        </span>
-                    </div>
-                </div>
+                <h2>5. Confirmar cita</h2>
 
                 <div class="form-group">
                     <label>Notas (opcional)</label>

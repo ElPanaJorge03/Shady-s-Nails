@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ApiService, Service } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
+import { AppointmentsService } from '../../core/services/appointments.service';
 import { ToastService } from '../../core/services/toast.service';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner';
 import { environment } from '../../../environments/environment';
@@ -56,7 +58,9 @@ export class BookingComponent implements OnInit {
     private http: HttpClient,
     private apiService: ApiService,
     private cdr: ChangeDetectorRef,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService,
+    private appointmentsService: AppointmentsService
   ) {
     this.loading = true; // Inicializar en true
     this.bookingForm = this.fb.group({
@@ -64,9 +68,6 @@ export class BookingComponent implements OnInit {
       additionalId: [''],
       date: ['', Validators.required],
       time: ['', Validators.required],
-      customerName: ['', Validators.required],
-      customerPhone: ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
-      customerEmail: ['', [Validators.required, Validators.email]],
       notes: ['']
     });
   }
@@ -246,45 +247,65 @@ export class BookingComponent implements OnInit {
     }
 
     this.loading = true;
-
     const formValue = this.bookingForm.value;
+    const currentUser = this.authService.getCurrentUser();
 
-    const customerData = {
-      name: formValue.customerName,
-      phone: formValue.customerPhone,
-      email: formValue.customerEmail
+    if (!currentUser) {
+      this.toastService.error('Debes iniciar sesión para agendar una cita');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Si el usuario es customer, usar su customer_id directamente
+    // Si es worker, crear un customer temporal (para testing)
+    const customerId = currentUser.role === 'customer' ? currentUser.id : null;
+
+    if (customerId) {
+      // Usuario autenticado como customer
+      this.createAppointmentForUser(customerId, formValue);
+    } else {
+      // Worker o admin - crear customer temporal
+      const customerData = {
+        name: currentUser.name,
+        phone: currentUser.phone || '0000000000',
+        email: currentUser.email
+      };
+
+      this.http.post<any>(`${environment.apiUrl}/customers`, customerData).subscribe({
+        next: (customer) => {
+          this.createAppointmentForUser(customer.id, formValue);
+        },
+        error: (err) => {
+          console.error('Error creating customer:', err);
+          this.toastService.error('Error al registrar tus datos.');
+          this.loading = false;
+        }
+      });
+    }
+  }
+
+  private createAppointmentForUser(customerId: number, formValue: any): void {
+    const appointmentData = {
+      worker_id: 1,
+      customer_id: customerId,
+      service_id: +formValue.serviceId,
+      additional_id: formValue.additionalId ? +formValue.additionalId : null,
+      date: formValue.date,
+      start_time: formValue.time,
+      notes: formValue.notes || ''
     };
 
-    this.http.post<any>(`${environment.apiUrl}/customers`, customerData).subscribe({
-      next: (customer) => {
-        const appointmentData = {
-          worker_id: 1,
-          customer_id: customer.id,
-          service_id: +formValue.serviceId,
-          additional_id: formValue.additionalId ? +formValue.additionalId : null,
-          date: formValue.date,
-          start_time: formValue.time,
-          notes: formValue.notes || ''
-        };
-
-        this.http.post(`${environment.apiUrl}/appointments`, appointmentData).subscribe({
-          next: () => {
-            this.toastService.success('¡Cita Confirmada! Te esperamos.');
-            this.loading = false;
-            setTimeout(() => {
-              this.router.navigate(['/services']);
-            }, 2000);
-          },
-          error: (err) => {
-            console.error('Error creating appointment:', err);
-            this.toastService.error('Error al crear la cita. Reintenta de nuevo.');
-            this.loading = false;
-          }
-        });
+    this.appointmentsService.createAppointment(appointmentData).subscribe({
+      next: () => {
+        this.toastService.success('¡Cita Confirmada! Te esperamos.');
+        this.loading = false;
+        setTimeout(() => {
+          this.router.navigate(['/services']);
+        }, 2000);
       },
       error: (err) => {
-        console.error('Error creating customer:', err);
-        this.toastService.error('Error al registrar tus datos. Reintenta de nuevo.');
+        console.error('Error creating appointment:', err);
+        this.toastService.error('Error al crear la cita. Reintenta de nuevo.');
         this.loading = false;
       }
     });
