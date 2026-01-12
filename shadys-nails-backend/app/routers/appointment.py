@@ -14,7 +14,7 @@ from app.utils.appointment_validation import (
     validate_future_date
 )
 from app.utils.entity_validation import validate_all_entities
-from app.utils.email_service import send_email, get_confirmation_template, get_cancellation_template
+from app.utils.email_service import send_email, get_confirmation_template, get_cancellation_template, get_update_template
 from app.models.customer import Customer
 from app.models.service import Service
 
@@ -79,6 +79,7 @@ def create_appointment(
     """
     Crea una nueva cita con validaciones automáticas:
     - Valida que worker, customer y service existan
+    - Auto-crea customer si no existe pero hay un user con ese ID
     - Valida que la fecha no sea en el pasado
     - Calcula end_time según duración del servicio + adicional
     - Valida horarios (9am-8:59pm inicio, 11pm fin máximo)
@@ -86,7 +87,32 @@ def create_appointment(
     - Asocia la cita al usuario autenticado (si existe)
     """
     
-    # VALIDACIÓN 1: Verificar que todas las entidades existan
+    # VALIDACIÓN 1: Auto-crear customer si no existe pero el user sí
+    from app.models.user import User
+    customer = db.query(Customer).filter(Customer.id == data.customer_id).first()
+    
+    if not customer:
+        # Intentar encontrar el usuario correspondiente
+        user = db.query(User).filter(User.id == data.customer_id).first()
+        if user:
+            # Auto-crear customer desde user
+            customer = Customer(
+                id=user.id,
+                name=user.name,
+                phone=user.phone,
+                email=user.email
+            )
+            db.add(customer)
+            db.commit()
+            db.refresh(customer)
+            print(f"✅ Auto-creado customer ID {customer.id} desde user")
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Customer con ID {data.customer_id} no encontrado"
+            )
+    
+    # VALIDACIÓN 2: Verificar que worker y service existan
     validate_all_entities(
         worker_id=data.worker_id,
         customer_id=data.customer_id,
@@ -308,6 +334,38 @@ def update_appointment(
     # 7️⃣ Guardar cambios
     db.commit()
     db.refresh(appointment)
+    
+    # 📧 ENVIAR CORREO DE ACTUALIZACIÓN
+    try:
+        # Cargar relaciones si no están cargadas
+        if appointment.customer and appointment.customer.email and appointment.service:
+            # Determinar qué cambió para el mensaje
+            changes_list = []
+            if data.date is not None:
+                changes_list.append(f"Fecha actualizada a {date_val}")
+            if data.start_time is not None:
+                changes_list.append(f"Hora actualizada a {start_time_val}")
+            if data.service_id is not None:
+                changes_list.append(f"Servicio cambiado a {appointment.service.name}")
+            if data.worker_id is not None and appointment.worker:
+                changes_list.append(f"Manicurista cambiada a {appointment.worker.name}")
+            
+            changes_description = ". ".join(changes_list) if changes_list else "Se han actualizado los detalles de tu cita"
+            
+            body = get_update_template(
+                customer_name=appointment.customer.name,
+                service_name=appointment.service.name,
+                date=str(appointment.date),
+                time=str(appointment.start_time),
+                changes=changes_description
+            )
+            send_email(
+                subject="📝 Tu cita ha sido actualizada - Shady's Nails",
+                recipient=appointment.customer.email,
+                body_html=body
+            )
+    except Exception as email_err:
+        print(f"⚠️ Error al preparar email de actualización: {email_err}")
     
     return appointment
 

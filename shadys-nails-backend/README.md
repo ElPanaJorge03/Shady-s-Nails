@@ -173,6 +173,9 @@ shadys-nails-backend/
 - ✅ Soft delete (citas canceladas se mantienen en historial)
 - ✅ Filtros por worker y fecha
 - ✅ Documentación automática con Swagger
+- ✅ **Notificaciones por email** (confirmación, actualización, cancelación)
+- ✅ **Templates HTML personalizados** para emails
+- ✅ **Modo simulación** para testing sin enviar emails reales
 
 ## 🔒 Seguridad
 
@@ -205,11 +208,99 @@ Esto creará:
 ### Error: "relation does not exist"
 **Solución:** Las tablas se crean automáticamente al iniciar el servidor. Verifica que `create_all` se ejecute correctamente
 
+## 📧 Notificaciones por Email
+
+### Configuración de Email
+
+El sistema envía notificaciones automáticas por email cuando:
+- ✅ Se crea una nueva cita (confirmación)
+- ✅ Se actualiza una cita (notificación de cambios)
+- ✅ Se cancela una cita (aviso de cancelación)
+
+### Configurar Gmail (Recomendado)
+
+1. **Crear App Password** (no uses tu contraseña normal):
+   - Ve a tu cuenta de Google: https://myaccount.google.com/security
+   - Activa la verificación en 2 pasos si no la tienes
+   - Ve a "App Passwords": https://myaccount.google.com/apppasswords
+   - Selecciona "Mail" y "Windows Computer" (o el que prefieras)
+   - Copia la contraseña de 16 caracteres generada
+
+2. **Configurar en `.env`**:
+```env
+EMAIL_ENABLED=true
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=tu-email@gmail.com
+SMTP_PASSWORD=xxxx-xxxx-xxxx-xxxx  # App Password de 16 caracteres
+SENDER_NAME=Shady's Nails 💅
+```
+
+### Configurar Outlook/Hotmail
+
+```env
+EMAIL_ENABLED=true
+SMTP_SERVER=smtp-mail.outlook.com
+SMTP_PORT=587
+SMTP_USER=tu-email@outlook.com
+SMTP_PASSWORD=tu-contraseña
+SENDER_NAME=Shady's Nails 💅
+```
+
+### Modo Simulación (Testing)
+
+Si no configuras credenciales SMTP, los emails se simularán en la consola:
+
+```env
+# Dejar vacío para modo simulación
+SMTP_USER=
+SMTP_PASSWORD=
+```
+
+O deshabilitar completamente:
+
+```env
+EMAIL_ENABLED=false
+```
+
+### Probar el Sistema de Emails
+
+Ejecuta el script de prueba:
+
+```bash
+python test_email_notifications.py
+```
+
+Este script probará:
+- ✅ Creación de cita con email de confirmación
+- ✅ Actualización de cita con email de notificación
+- ✅ Cancelación de cita con email de aviso
+- ✅ Validación de templates HTML
+
+### Solución de Problemas de Email
+
+**Error: "SMTPAuthenticationError"**
+- Verifica que uses una App Password (Gmail) y no tu contraseña normal
+- Asegúrate de que la verificación en 2 pasos esté activada (Gmail)
+
+**Error: "Connection refused"**
+- Verifica que `SMTP_SERVER` y `SMTP_PORT` sean correctos
+- Revisa tu firewall/antivirus
+
+**Los emails no llegan**
+- Revisa la carpeta de spam
+- Verifica que el email del cliente en la BD sea válido
+- Revisa los logs del servidor para ver si hubo errores
+
+**Modo simulación no funciona**
+- Asegúrate de que `SMTP_USER` y `SMTP_PASSWORD` estén vacíos en `.env`
+- O configura `EMAIL_ENABLED=false`
+
 ## 📝 Próximos Pasos
 
-- [ ] Implementar autenticación JWT
-- [ ] Agregar sistema de notificaciones
-- [ ] Implementar webhooks
+- [ ] Implementar autenticación JWT completa
+- [x] ~~Sistema de notificaciones por email~~ ✅ **COMPLETADO**
+- [ ] Implementar recordatorios automáticos (24h antes)
 - [ ] Agregar tests unitarios
 - [ ] Configurar CI/CD
 
