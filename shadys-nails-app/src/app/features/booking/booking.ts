@@ -286,7 +286,7 @@ export class BookingComponent implements OnInit {
 
   private createAppointmentForUser(customerId: number, formValue: any): void {
     const appointmentData = {
-      worker_id: 1,
+      worker_id: 5, // Gina Paola Martinez Barrera (production worker ID)
       customer_id: customerId,
       service_id: +formValue.serviceId,
       additional_id: formValue.additionalId ? +formValue.additionalId : null,
