@@ -7,7 +7,10 @@ from pydantic import BaseModel
 from app.database import get_db
 from app.models.appointment import Appointment
 from app.dependencies import get_current_user  # Importar desde dependencies
+<<<<<<< HEAD
 from app.models.user import User
+=======
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 from app.utils.appointment_validation import (
     validate_appointment_time,
     calculate_end_time,
@@ -75,7 +78,11 @@ class AppointmentUpdate(BaseModel):
 def create_appointment(
     data: AppointmentCreate,
     db: Session = Depends(get_db),
+<<<<<<< HEAD
     current_user: User = Depends(get_current_user)
+=======
+    current_user = None  # Temporalmente sin autenticación
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Crea una nueva cita con validaciones automáticas:
@@ -126,10 +133,16 @@ def create_appointment(
     validate_future_date(data.date)
     
     # Calcular duración total y hora de fin
+<<<<<<< HEAD
     additional_id_value = data.additional_id if data.additional_id is not None else 0
     total_duration = get_total_duration(
         service_id=data.service_id,
         additional_id=additional_id_value,
+=======
+    total_duration = get_total_duration(
+        service_id=data.service_id,
+        additional_id=data.additional_id,
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
         db=db
     )
     
@@ -189,7 +202,11 @@ def list_appointments(
     worker_id: Optional[int] = None,
     date: Optional[date] = None,
     db: Session = Depends(get_db),
+<<<<<<< HEAD
     current_user: User = Depends(get_current_user)
+=======
+    current_user = None  # Temporalmente sin autenticación
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Lista citas según el rol del usuario:
@@ -253,8 +270,12 @@ def get_appointment(
 def update_appointment(
     appointment_id: int,
     data: AppointmentUpdate,
+<<<<<<< HEAD
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
+=======
+    db: Session = Depends(get_db)
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Actualiza una cita existente.
@@ -376,8 +397,12 @@ def update_appointment(
 @router.delete("/{appointment_id}", status_code=status.HTTP_200_OK)
 def cancel_appointment(
     appointment_id: int,
+<<<<<<< HEAD
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
+=======
+    db: Session = Depends(get_db)
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Cancela una cita (soft delete - cambia status a 'cancelled').
@@ -430,4 +455,8 @@ def cancel_appointment(
         "appointment_id": appointment_id,
         "previous_status": previous_status,
         "new_status": "cancelled"
+<<<<<<< HEAD
     }
+=======
+    }
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522

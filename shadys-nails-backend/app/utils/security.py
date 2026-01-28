@@ -1,11 +1,19 @@
+<<<<<<< HEAD
 """Security utilities for authentication.
 
 - Password hashing with bcrypt
 - JWT token creation and verification
+=======
+"""
+Utilidades de seguridad para autenticación
+- Hashing de contraseñas con bcrypt
+- Creación y verificación de JWT tokens
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 """
 
 from datetime import datetime, timedelta
 from typing import Optional
+<<<<<<< HEAD
 import os
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -15,6 +23,13 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     SECRET_KEY = "dev-secret-key-change-in-prod"  # fallback seguro para desarrollo
     print("WARNING: SECRET_KEY no está definido en el entorno. Usando fallback de desarrollo. Configúralo en producción.")
+=======
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
+# Configuración
+SECRET_KEY = "tu-clave-secreta-super-segura-cambiala-en-produccion-123456789"  # TODO: Mover a .env
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 horas
 
@@ -23,7 +38,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
+<<<<<<< HEAD
     """Verifica si una contraseña coincide con su hash (truncando a 72 bytes cuando aplica)."""
+=======
+    """
+    Verifica si una contraseña coincide con su hash
+    
+    Trunca la contraseña a 72 bytes para mantener consistencia con el hashing.
+    """
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
     # Truncar a 72 bytes para mantener consistencia
     password_bytes = plain_password.encode('utf-8')[:72]
     password_truncated = password_bytes.decode('utf-8', errors='ignore')
@@ -31,7 +54,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def get_password_hash(password: str) -> str:
+<<<<<<< HEAD
     """Genera el hash de una contraseña (truncando a 72 bytes cuando aplica)."""
+=======
+    """
+    Genera el hash de una contraseña
+    
+    Bcrypt tiene un límite de 72 bytes, así que truncamos la contraseña
+    si es necesario para evitar errores.
+    """
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
     # Truncar a 72 bytes para cumplir con el límite de bcrypt
     password_bytes = password.encode('utf-8')[:72]
     password_truncated = password_bytes.decode('utf-8', errors='ignore')
@@ -39,19 +71,53 @@ def get_password_hash(password: str) -> str:
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+<<<<<<< HEAD
     """Crea un JWT token."""
     to_encode = data.copy()
+=======
+    """
+    Crea un JWT token
+    
+    Args:
+        data: Datos a incluir en el token (ej: {"sub": "user@example.com"})
+        expires_delta: Tiempo de expiración personalizado
+    
+    Returns:
+        Token JWT como string
+    """
+    to_encode = data.copy()
+    
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+<<<<<<< HEAD
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+=======
+    
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
     return encoded_jwt
 
 
 def decode_access_token(token: str) -> Optional[dict]:
+<<<<<<< HEAD
     """Decodifica y verifica un JWT token."""
+=======
+    """
+    Decodifica y verifica un JWT token
+    
+    Args:
+        token: Token JWT a decodificar
+    
+    Returns:
+        Payload del token si es válido, None si no lo es
+    """
+>>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
