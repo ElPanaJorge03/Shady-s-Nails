@@ -1,0 +1,64 @@
+<div class="register-container">
+    <div class="register-card">
+        <div class="logo">💅</div>
+        <h1>Shady's Nails</h1>
+        <h2>Crear Cuenta</h2>
+
+        <app-loading-spinner *ngIf="loading" [overlay]="true" message="Creando tu cuenta..."></app-loading-spinner>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" formControlName="name" placeholder="María García">
+                <span class="error-text" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+                    Nombre requerido (mínimo 3 caracteres)
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" formControlName="email" placeholder="maria@example.com">
+                <span class="error-text"
+                    *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                    Email válido requerido
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="tel" formControlName="phone" placeholder="3001234567">
+                <span class="error-text"
+                    *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+                    Teléfono de 10 dígitos requerido
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" formControlName="password" placeholder="••••••••">
+                <span class="error-text"
+                    *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                    Contraseña mínimo 6 caracteres
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label>Confirmar Contraseña</label>
+                <input type="password" formControlName="confirmPassword" placeholder="••••••••">
+                <span class="error-text"
+                    *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched">
+                    Las contraseñas no coinciden
+                </span>
+            </div>
+
+            <button type="submit" class="btn-register" [disabled]="registerForm.invalid || loading">
+                <span *ngIf="!loading">Crear Cuenta</span>
+                <span *ngIf="loading">Creando...</span>
+            </button>
+
+            <div class="login-link">
+                ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+            </div>
+        </form>
+    </div>
+</div>

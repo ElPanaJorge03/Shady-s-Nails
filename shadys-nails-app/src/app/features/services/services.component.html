@@ -1,0 +1,25 @@
+<div class="services-container">
+    <h2>💅 Servicios de Shady's Nails</h2>
+    <p class="subtitle">Selecciona el servicio que deseas</p>
+
+    <div *ngIf="loading" class="loading">
+        <p>Cargando servicios...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+        <p>{{ error }}</p>
+    </div>
+
+    <div class="services-grid" *ngIf="!loading && !error">
+        <div class="service-card" *ngFor="let service of services">
+            <h3>{{ service.name }}</h3>
+            <p class="duration">⏱️ {{ service.duration_minutes }} minutos</p>
+            <p class="price">${{ service.price | number }}</p>
+            <button class="btn-book" (click)="bookService(service)">Agendar Cita</button>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && !error && services.length === 0" class="empty">
+        <p>No hay servicios disponibles</p>
+    </div>
+</div>

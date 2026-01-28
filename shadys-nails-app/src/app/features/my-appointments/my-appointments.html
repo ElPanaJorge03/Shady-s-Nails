@@ -1,0 +1,83 @@
+<div class="appointments-container">
+    <div class="appointments-card">
+        <div class="header">
+            <button class="btn-back" (click)="goToServices()">← Volver</button>
+            <h1>📋 Mis Citas</h1>
+            <button class="btn-new" (click)="bookNewAppointment()">+ Nueva Cita</button>
+        </div>
+
+        <app-loading-spinner *ngIf="loading" [overlay]="true" message="Cargando tus citas..."></app-loading-spinner>
+
+        <div *ngIf="!loading && upcomingAppointments.length === 0 && historyAppointments.length === 0"
+            class="empty-state">
+            <div class="empty-icon">📅</div>
+            <h2>No tienes citas agendadas</h2>
+            <p>¡Agenda tu primera cita para lucir unas uñas hermosas!</p>
+            <button class="btn-book" (click)="bookNewAppointment()">Agendar Cita</button>
+        </div>
+
+        <div *ngIf="!loading && (upcomingAppointments.length > 0 || historyAppointments.length > 0)"
+            class="dashboard-content">
+
+            <!-- SECCIÓN: PRÓXIMAS CITAS -->
+            <section class="appointment-section" *ngIf="upcomingAppointments.length > 0">
+                <h2 class="section-title">📅 Próximas Citas</h2>
+                <div class="appointments-list">
+                    <div *ngFor="let appointment of upcomingAppointments" class="appointment-card upcoming">
+                        <div class="appointment-header">
+                            <div class="date-info">
+                                <div class="date">{{ formatDate(appointment.date) }}</div>
+                                <div class="time">🕐 {{ appointment.start_time }}</div>
+                            </div>
+                            <div class="status" [ngClass]="getStatusClass(appointment.status)">
+                                {{ getStatusText(appointment.status) }}
+                            </div>
+                        </div>
+
+                        <div class="appointment-body">
+                            <div class="service-info">
+                                <h3>{{ appointment.service_name || 'Servicio' }}</h3>
+                                <p *ngIf="appointment.additional_name" class="additional">
+                                    + {{ appointment.additional_name }}
+                                </p>
+                            </div>
+
+                            <div class="details">
+                                <div class="detail-item">
+                                    <span class="label">💅 Trabajador:</span>
+                                    <span class="value">{{ appointment.worker_name || 'Gina Paola' }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="appointment-footer">
+                            <button class="btn-cancel" (click)="cancelAppointment(appointment)">
+                                Cancelar Cita
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: HISTORIAL -->
+            <section class="appointment-section history" *ngIf="historyAppointments.length > 0">
+                <h2 class="section-title">🕒 Historial de Citas</h2>
+                <div class="appointments-grid">
+                    <div *ngFor="let appointment of historyAppointments" class="history-card"
+                        [class.cancelled]="appointment.status === 'cancelled'">
+                        <div class="history-date">
+                            <span class="day">{{ appointment.date | date:'dd' }}</span>
+                            <span class="month">{{ appointment.date | date:'MMM' }}</span>
+                        </div>
+                        <div class="history-info">
+                            <div class="service-name">{{ appointment.service_name }}</div>
+                            <div class="status-badge" [ngClass]="getStatusClass(appointment.status)">
+                                {{ getStatusText(appointment.status) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>

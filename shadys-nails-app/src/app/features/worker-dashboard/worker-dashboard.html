@@ -1,0 +1,82 @@
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <button class="btn-back" (click)="goBack()">← Volver</button>
+        <h1>💼 Dashboard - Panel de Gestión (V2)</h1>
+    </div>
+
+    <app-loading-spinner *ngIf="loading" [overlay]="true" message="Sincronizando panel..."></app-loading-spinner>
+
+    <div *ngIf="!loading" class="dashboard-content">
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">{{ stats.total }}</div>
+                <div class="stat-label">Total Citas</div>
+            </div>
+            <div class="stat-card pending">
+                <div class="stat-icon">⏳</div>
+                <div class="stat-value">{{ stats.pending }}</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+            <div class="stat-card completed">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value">{{ stats.completed }}</div>
+                <div class="stat-label">Completadas</div>
+            </div>
+            <div class="stat-card cancelled">
+                <div class="stat-icon">❌</div>
+                <div class="stat-value">{{ stats.cancelled }}</div>
+                <div class="stat-label">Canceladas</div>
+            </div>
+        </div>
+
+        <!-- Citas de Hoy -->
+        <div class="section">
+            <h2>📅 Citas de Hoy</h2>
+
+            <div *ngIf="todayAppointments.length === 0" class="empty-state">
+                <p>No hay citas programadas para hoy</p>
+            </div>
+
+            <div class="appointments-grid" *ngIf="todayAppointments.length > 0">
+                <div *ngFor="let apt of todayAppointments" class="appointment-card">
+                    <div class="apt-header">
+                        <div class="apt-time">🕐 {{ apt.start_time }}</div>
+                        <div class="apt-status" [ngClass]="getStatusClass(apt.status)">
+                            {{ getStatusText(apt.status) }}
+                        </div>
+                    </div>
+                    <div class="apt-body">
+                        <div class="apt-service">{{ apt.service_name || 'Servicio' }}</div>
+                        <div class="apt-customer">👤 {{ apt.customer_name || 'Cliente' }}</div>
+                        <div class="apt-additional" *ngIf="apt.additional_name">
+                            + {{ apt.additional_name }}
+                        </div>
+                    </div>
+                    <div class="apt-footer" *ngIf="apt.status === 'confirmed'">
+                        <button class="btn-complete" (click)="markAsCompleted(apt)">
+                            Marcar Completada
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Todas las Citas -->
+        <div class="section">
+            <h2>📋 Todas las Citas</h2>
+            <div class="appointments-list">
+                <div *ngFor="let apt of appointments" class="appointment-row">
+                    <div class="row-date">{{ formatDate(apt.date) }}</div>
+                    <div class="row-time">{{ apt.start_time }}</div>
+                    <div class="row-service">{{ apt.service_name || 'Servicio' }}</div>
+                    <div class="row-customer">{{ apt.customer_name || 'Cliente' }}</div>
+                    <div class="row-status" [ngClass]="getStatusClass(apt.status)">
+                        {{ getStatusText(apt.status) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
