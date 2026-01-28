@@ -41,10 +41,7 @@ interface TimeSlot {
 })
 export class BookingComponent implements OnInit {
   bookingForm: FormGroup;
-<<<<<<< HEAD
   selectedWorkerId?: number; // dinámico: evita hardcode de worker_id
-=======
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
   services: Service[] = [];
   additionals: Additional[] = [];
   availableSlots: TimeSlot[] = [];
@@ -185,14 +182,9 @@ export class BookingComponent implements OnInit {
     }
 
     const additionalId = this.bookingForm.get('additionalId')?.value;
-<<<<<<< HEAD
-    const workerId = this.selectedWorkerId ?? (this.authService.getCurrentUser()?.id ?? 1);
+    const workerId = this.selectedWorkerId ?? 5; // Default to production worker_id
     const params: any = {
       worker_id: workerId,
-=======
-    const params: any = {
-      worker_id: '1',
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
       date: date,
       service_id: serviceId.toString()
     };
@@ -295,16 +287,10 @@ export class BookingComponent implements OnInit {
   }
 
   private createAppointmentForUser(customerId: number, formValue: any): void {
-<<<<<<< HEAD
-    const currentUser = this.authService.getCurrentUser();
-    const workerId = this.selectedWorkerId ?? (currentUser?.role === 'worker' ? currentUser.id : 1);
+    const workerId = this.selectedWorkerId ?? 5; // Default to production worker_id (Gina Paola Martinez Barrera)
 
     const appointmentData = {
-      worker_id: workerId, // dinámico
-=======
-    const appointmentData = {
-      worker_id: 5, // Gina Paola Martinez Barrera (production worker ID)
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
+      worker_id: workerId,
       customer_id: customerId,
       service_id: +formValue.serviceId,
       additional_id: formValue.additionalId ? +formValue.additionalId : null,
