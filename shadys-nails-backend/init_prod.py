@@ -20,11 +20,11 @@ def init_production_data():
         existing_user = db.query(User).filter(User.email == gina_email).first()
         
         if not existing_user:
-            # Crear Usuario Admin
+            # Crear Usuario Admin desde cero
             admin_user = User(
                 email=gina_email,
                 name="Gina Martinez",
-                password_hash=get_password_hash("Shadys2024*"), # Contraseña temporal
+                password_hash=get_password_hash("Shadys2024*"),
                 role="worker",
                 phone="3000000000",
                 is_active=True
@@ -32,8 +32,18 @@ def init_production_data():
             db.add(admin_user)
             db.commit()
             db.refresh(admin_user)
-            
-            # Crear entrada en la tabla de Workers
+            print(f"✅ Administradora {gina_email} creada desde cero.")
+        else:
+            # Si ya existe (ej. entró por Google), asegurar que sea 'worker'
+            if existing_user.role != "worker":
+                existing_user.role = "worker"
+                db.commit()
+                print(f"⬆️ Usuario {gina_email} promovido a Administradora.")
+            admin_user = existing_user
+
+        # 2. Asegurar que esté en la tabla de Workers
+        existing_worker = db.query(Worker).filter(Worker.user_id == admin_user.id).first()
+        if not existing_worker:
             new_worker = Worker(
                 user_id=admin_user.id,
                 name=admin_user.name,
@@ -43,9 +53,9 @@ def init_production_data():
             )
             db.add(new_worker)
             db.commit()
-            print(f"✅ Administradora {gina_email} creada con éxito.")
+            print(f"👷 Entidad Worker creada para {gina_email}.")
         else:
-            print(f"ℹ️ La administradora {gina_email} ya existe.")
+            print(f"✅ Gina ya está configurada como Worker.")
             
     except Exception as e:
         print(f"❌ Error: {e}")
