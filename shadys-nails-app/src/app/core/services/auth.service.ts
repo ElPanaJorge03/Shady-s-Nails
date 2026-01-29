@@ -50,6 +50,31 @@ export class AuthService {
             );
     }
 
+    updateProfile(data: Partial<User> & { password?: string }): Observable<User> {
+        return this.http.put<User>(`${this.apiUrl}/me`, data).pipe(
+            tap(updatedUser => {
+                this.currentUserSubject.next(updatedUser);
+            })
+        );
+    }
+
+    forgotPassword(email: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+    }
+
+    resetPassword(data: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/reset-password`, data);
+    }
+
+    googleLogin(id_token: string): Observable<LoginResponse> {
+        return this.http.post<LoginResponse>(`${this.apiUrl}/google`, { id_token }).pipe(
+            tap(response => {
+                localStorage.setItem('access_token', response.access_token);
+                this.loadCurrentUser().subscribe();
+            })
+        );
+    }
+
     logout(): void {
         localStorage.removeItem('access_token');
         this.currentUserSubject.next(null);
@@ -77,15 +102,17 @@ export class AuthService {
         return this.currentUserSubject.value;
     }
 
-    private loadCurrentUser(): void {
-        this.http.get<User>(`${this.apiUrl}/me`).subscribe({
-            next: (user) => {
-                this.currentUserSubject.next(user);
-            },
-            error: (err) => {
-                console.error('Error loading user:', err);
-                this.logout();
-            }
-        });
+    private loadCurrentUser(): Observable<User> {
+        return this.http.get<User>(`${this.apiUrl}/me`).pipe(
+            tap({
+                next: (user) => {
+                    this.currentUserSubject.next(user);
+                },
+                error: (err) => {
+                    console.error('Error loading user:', err);
+                    this.logout();
+                }
+            })
+        );
     }
 }

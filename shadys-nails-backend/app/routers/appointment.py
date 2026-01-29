@@ -1,16 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
-from datetime import date, time
+from datetime import date, time, datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel
 
 from app.database import get_db
 from app.models.appointment import Appointment
 from app.dependencies import get_current_user  # Importar desde dependencies
-<<<<<<< HEAD
 from app.models.user import User
-=======
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 from app.utils.appointment_validation import (
     validate_appointment_time,
     calculate_end_time,
@@ -18,7 +15,15 @@ from app.utils.appointment_validation import (
     validate_future_date
 )
 from app.utils.entity_validation import validate_all_entities
-from app.utils.email_service import send_email, get_confirmation_template, get_cancellation_template, get_update_template
+from app.utils.email_service import (
+    send_email, 
+    get_confirmation_template, 
+    get_cancellation_template, 
+    get_update_template,
+    get_request_received_template,
+    get_new_appointment_request_admin_template,
+    get_completion_template
+)
 from app.models.customer import Customer
 from app.models.service import Service
 
@@ -40,6 +45,34 @@ class AppointmentCreate(BaseModel):
     start_time: time
     notes: Optional[str] = None
 
+# Schemas simples para response anidado
+class CustomerSimple(BaseModel):
+    id: int
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    
+    class Config:
+        from_attributes = True
+
+class ServiceSimple(BaseModel):
+    id: int
+    name: str
+    price: float
+    duration_minutes: int
+    
+    class Config:
+        from_attributes = True
+
+class AdditionalSimple(BaseModel):
+    id: int
+    name: str
+    price: float
+    extra_duration: int
+    
+    class Config:
+        from_attributes = True
+
 class AppointmentResponse(BaseModel):
     id: int
     worker_id: int
@@ -51,10 +84,12 @@ class AppointmentResponse(BaseModel):
     end_time: time
     status: str
     notes: Optional[str]
-    worker_name: Optional[str] = None
-    customer_name: Optional[str] = None
-    service_name: Optional[str] = None
-    additional_name: Optional[str] = None
+    
+    # Objetos anidados en lugar de nombres sueltos
+    customer: Optional[CustomerSimple] = None
+    service: Optional[ServiceSimple] = None
+    additional: Optional[AdditionalSimple] = None
+    worker_name: Optional[str] = None # Mantenemos worker_name si es util, o lo cambiamos a objeto tambien. Dejemoslo asi por ahora o update.
     
     class Config:
         from_attributes = True
@@ -78,11 +113,7 @@ class AppointmentUpdate(BaseModel):
 def create_appointment(
     data: AppointmentCreate,
     db: Session = Depends(get_db),
-<<<<<<< HEAD
     current_user: User = Depends(get_current_user)
-=======
-    current_user = None  # Temporalmente sin autenticación
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Crea una nueva cita con validaciones automáticas:
@@ -133,16 +164,10 @@ def create_appointment(
     validate_future_date(data.date)
     
     # Calcular duración total y hora de fin
-<<<<<<< HEAD
     additional_id_value = data.additional_id if data.additional_id is not None else 0
     total_duration = get_total_duration(
         service_id=data.service_id,
         additional_id=additional_id_value,
-=======
-    total_duration = get_total_duration(
-        service_id=data.service_id,
-        additional_id=data.additional_id,
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
         db=db
     )
     
@@ -165,7 +190,7 @@ def create_appointment(
         date=data.date,
         start_time=data.start_time,
         end_time=end_time,
-        status="confirmed",
+        status="pending", # Cambiado de confirmed a pending para que Gina la apruebe
         notes=data.notes
     )
     
@@ -173,26 +198,45 @@ def create_appointment(
     db.commit()
     db.refresh(new_appointment)
     
-    # 📧 ENVIAR CORREO DE CONFIRMACIÓN
+    # 📧 ENVIAR CORREOS DE NOTIFICACIÓN
     try:
-        # Cargar relaciones para el correo si no están cargadas
-        customer = db.query(Customer).filter(Customer.id == data.customer_id).first()
-        service = db.query(Service).filter(Service.id == data.service_id).first()
+        # Cargar relaciones para el correo
+        customer_obj = db.query(Customer).filter(Customer.id == data.customer_id).first()
+        service_obj = db.query(Service).filter(Service.id == data.service_id).first()
         
-        if customer and customer.email and service:
-            body = get_confirmation_template(
-                customer_name=customer.name,
-                service_name=service.name,
+        if customer_obj and customer_obj.email and service_obj:
+            # 1. Correo al Cliente (Solicitud Recibida)
+            customer_body = get_request_received_template(
+                customer_name=customer_obj.name,
+                service_name=service_obj.name,
                 date=str(data.date),
                 time=str(data.start_time)
             )
             send_email(
-                subject="💅 Confirmación de tu cita - Shady's Nails",
-                recipient=customer.email,
-                body_html=body
+                subject="⏳ Hemos recibido tu solicitud - Shady's Nails",
+                recipient=customer_obj.email,
+                body_html=customer_body
             )
+
+            # 2. Correo a la Manicurista (Gina)
+            from app.models.worker import Worker
+            worker_obj = db.query(Worker).filter(Worker.id == data.worker_id).first()
+            
+            if worker_obj and worker_obj.email:
+                admin_body = get_new_appointment_request_admin_template(
+                    worker_name=worker_obj.name,
+                    customer_name=customer_obj.name,
+                    service_name=service_obj.name,
+                    date=str(data.date),
+                    time=str(data.start_time)
+                )
+                send_email(
+                    subject="💅 Tienes una nueva solicitud de cita",
+                    recipient=worker_obj.email,
+                    body_html=admin_body
+                )
     except Exception as email_err:
-        print(f"⚠️ Error al preparar email de confirmación: {email_err}")
+        print(f"⚠️ Error al enviar notificaciones de creación: {email_err}")
     
     return new_appointment
 
@@ -202,11 +246,7 @@ def list_appointments(
     worker_id: Optional[int] = None,
     date: Optional[date] = None,
     db: Session = Depends(get_db),
-<<<<<<< HEAD
     current_user: User = Depends(get_current_user)
-=======
-    current_user = None  # Temporalmente sin autenticación
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Lista citas según el rol del usuario:
@@ -270,12 +310,8 @@ def get_appointment(
 def update_appointment(
     appointment_id: int,
     data: AppointmentUpdate,
-<<<<<<< HEAD
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-=======
-    db: Session = Depends(get_db)
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Actualiza una cita existente.
@@ -397,12 +433,8 @@ def update_appointment(
 @router.delete("/{appointment_id}", status_code=status.HTTP_200_OK)
 def cancel_appointment(
     appointment_id: int,
-<<<<<<< HEAD
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-=======
-    db: Session = Depends(get_db)
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
 ):
     """
     Cancela una cita (soft delete - cambia status a 'cancelled').
@@ -423,6 +455,17 @@ def cancel_appointment(
         raise HTTPException(
             status_code=400,
             detail="Esta cita ya está cancelada"
+        )
+
+    # 🛑 RESTRICCIÓN: 2 Horas antes para clientes
+    appointment_dt = datetime.combine(appointment.date, appointment.start_time)
+    now = datetime.now()
+    
+    # Si falta menos de 2 horas y el usuario es cliente
+    if current_user.role == 'customer' and now > (appointment_dt - timedelta(hours=2)):
+        raise HTTPException(
+            status_code=400,
+            detail="Lo sentimos, no puedes cancelar con menos de 2 horas de anticipación. Por favor contacta a Shady's Nails directamente."
         )
     
     # Guardar el status anterior antes de modificarlo
@@ -455,8 +498,88 @@ def cancel_appointment(
         "appointment_id": appointment_id,
         "previous_status": previous_status,
         "new_status": "cancelled"
-<<<<<<< HEAD
     }
-=======
-    }
->>>>>>> d0b83f2ff2d7803677a1b07a72874874e1937522
+
+
+@router.patch("/{appointment_id}/confirm", response_model=AppointmentResponse)
+def confirm_appointment_status(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Confirma una cita (Pasa de 'pending' a 'confirmed').
+    Solo accesible por workers.
+    """
+    if current_user.role != 'worker':
+        raise HTTPException(status_code=403, detail="Solo workers pueden confirmar citas")
+
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    if appointment.status == 'confirmed':
+        return appointment
+
+    appointment.status = 'confirmed'
+    db.commit()
+    db.refresh(appointment)
+
+    # 📧 Notificar al cliente
+    try:
+        if appointment.customer and appointment.customer.email:
+             # Usamos el mismo template de confirmación
+            body = get_confirmation_template(
+                customer_name=appointment.customer.name,
+                service_name=appointment.service.name if appointment.service else "Servicio",
+                date=str(appointment.date),
+                time=str(appointment.start_time)
+            )
+            send_email(
+                subject="✅ ¡Tu cita ha sido aceptada! - Shady's Nails",
+                recipient=appointment.customer.email,
+                body_html=body
+            )
+    except Exception as e:
+        print(f"Error enviando email confirmación: {e}")
+
+    return appointment
+
+
+@router.patch("/{appointment_id}/complete", response_model=AppointmentResponse)
+def complete_appointment_status(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Marca una cita como completada (Pasa de 'confirmed' a 'completed').
+    Solo accesible por workers.
+    """
+    if current_user.role != 'worker':
+        raise HTTPException(status_code=403, detail="Solo workers pueden completar citas")
+
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+
+    appointment.status = 'completed'
+    db.commit()
+    db.refresh(appointment)
+
+    # 📧 Notificar al cliente que su cita se completó
+    try:
+        if appointment.customer and appointment.customer.email:
+            body = get_completion_template(
+                customer_name=appointment.customer.name,
+                service_name=appointment.service.name if appointment.service else "Servicio"
+            )
+            send_email(
+                subject="✨ ¡Gracias por elegir Shady's Nails!",
+                recipient=appointment.customer.email,
+                body_html=body
+            )
+    except Exception as e:
+        print(f"Error enviando email de completado: {e}")
+
+    return appointment

@@ -1,25 +1,68 @@
-<div class="services-container">
-    <h2>💅 Servicios de Shady's Nails</h2>
-    <p class="subtitle">Selecciona el servicio que deseas</p>
-
-    <div *ngIf="loading" class="loading">
-        <p>Cargando servicios...</p>
-    </div>
-
-    <div *ngIf="error" class="error">
-        <p>{{ error }}</p>
-    </div>
-
-    <div class="services-grid" *ngIf="!loading && !error">
-        <div class="service-card" *ngFor="let service of services">
-            <h3>{{ service.name }}</h3>
-            <p class="duration">⏱️ {{ service.duration_minutes }} minutos</p>
-            <p class="price">${{ service.price | number }}</p>
-            <button class="btn-book" (click)="bookService(service)">Agendar Cita</button>
+<!-- Página de Servicios Premium -->
+<div class="services-page">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">💅 Servicios Premium</h1>
+            <p class="page-subtitle">Selecciona el servicio perfecto para ti</p>
         </div>
     </div>
 
-    <div *ngIf="!loading && !error && services.length === 0" class="empty">
-        <p>No hay servicios disponibles</p>
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Cargando servicios...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-container">
+        <div class="error-icon">⚠️</div>
+        <p class="error-message">{{ error }}</p>
+        <button class="btn-retry" (click)="loadServices()">Reintentar</button>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="services-container" *ngIf="!loading && !error">
+        <div class="services-grid">
+            <div class="service-card" *ngFor="let service of services" (click)="bookService(service)"
+                [class.featured]="service.price > 40000">
+                <!-- Service Icon/Badge -->
+                <div class="service-badge" *ngIf="service.price > 40000">
+                    <span>✨ Premium</span>
+                </div>
+
+                <!-- Service Content -->
+                <div class="service-content">
+                    <h3 class="service-name">{{ service.name }}</h3>
+
+                    <div class="service-details">
+                        <div class="detail-item">
+                            <span class="icon">⏱️</span>
+                            <span class="text">{{ service.duration_minutes }} min</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="icon">💰</span>
+                            <span class="text price">{{ formatPrice(service.price) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Call to Action -->
+                    <div class="service-cta">
+                        <span class="cta-text">Agendar ahora</span>
+                        <span class="cta-icon">→</span>
+                    </div>
+                </div>
+
+                <!-- Hover Effect Overlay -->
+                <div class="card-overlay"></div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="services.length === 0" class="empty-state">
+            <div class="empty-icon">📋</div>
+            <h3>No hay servicios disponibles</h3>
+            <p>Por favor, vuelve más tarde</p>
+        </div>
     </div>
 </div>

@@ -1,0 +1,83 @@
+/* Correcciones de contraste para el dashboard */
+
+/* Asegurar que todos los botones primarios tengan texto blanco */
+.btn-primary,
+button.btn-primary,
+.modal-content .btn-primary,
+.service-form .btn-primary {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+}
+
+/* Asegurar que el título de sección sea visible */
+.section-title,
+.dashboard-content .section-title {
+    color: #111827 !important;
+}
+
+/* Asegurar que los títulos de modal sean visibles */
+.modal-header h2 {
+    color: #111827 !important;
+}
+
+/* Asegurar que los labels de formulario sean visibles */
+.service-form label,
+.form-group label {
+    color: #111827 !important;
+}
+
+/* Asegurar que los botones secundarios sean visibles */
+.btn-secondary,
+button.btn-secondary {
+    color: #111827 !important;
+    background: #f9fafb !important;
+}
+
+/* Asegurar que el texto de los tabs sea visible */
+.tab-button {
+    color: #6b7280 !important;
+}
+
+.tab-button.active {
+    color: #ffffff !important;
+}
+
+/* Asegurar que los nombres de servicios sean visibles */
+.service-name,
+.service-card .service-name {
+    color: #111827 !important;
+}
+
+/* Asegurar que los textos de detalles sean visibles */
+.service-details .text,
+.detail-item .text {
+    color: #6b7280 !important;
+}
+
+/* Asegurar que todos los textos en tarjetas blancas sean visibles */
+.kpi-card h3,
+.kpi-card .kpi-value,
+.section-card .card-title,
+.appointment-card .label,
+.appointment-card .value {
+    color: #111827 !important;
+}
+
+/* Asegurar que los inputs sean visibles */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"] {
+    color: #111827 !important;
+    background: #ffffff !important;
+}
+
+/* Asegurar que los placeholders sean visibles */
+input::placeholder {
+    color: #9ca3af !important;
+}
+
+/* Asegurar que los mensajes de error sean visibles */
+.error-message {
+    color: #ef4444 !important;
+}

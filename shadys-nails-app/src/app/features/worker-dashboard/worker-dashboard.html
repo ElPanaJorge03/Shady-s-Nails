@@ -1,82 +1,367 @@
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <button class="btn-back" (click)="goBack()">← Volver</button>
-        <h1>💼 Dashboard - Panel de Gestión (V2)</h1>
+<div class="dashboard-container" *ngIf="!loading">
+  <!-- Header del Dashboard -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>💅 Dashboard - Shady's Nails</h1>
+        <p class="welcome-text">Bienvenida, {{ currentUser?.name }}</p>
+      </div>
+      <div class="header-right">
+        <!-- Botón eliminado: El worker no debe salir del dashboard -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Navegación por Tabs -->
+  <nav class="dashboard-tabs">
+    <button class="tab-button" [class.active]="activeTab === 'overview'" (click)="setActiveTab('overview')">
+      📊 Vista General
+    </button>
+    <button class="tab-button" [class.active]="activeTab === 'appointments'" (click)="setActiveTab('appointments')">
+      📅 Agenda Completa
+    </button>
+    <button class="tab-button" [class.active]="activeTab === 'services'" (click)="setActiveTab('services')">
+      💅 Mis Servicios
+    </button>
+    <button class="tab-button" [class.active]="activeTab === 'schedules'" (click)="setActiveTab('schedules')">
+      ⏰ Mis Horarios
+    </button>
+    <button class="tab-button" [class.active]="activeTab === 'stats'" (click)="setActiveTab('stats')">
+      📈 Estadísticas
+    </button>
+  </nav>
+
+  <!-- CONTENIDO: VISTA GENERAL -->
+  <div class="dashboard-content" *ngIf="activeTab === 'overview'">
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-total">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-content">
+          <h3>Citas Hoy</h3>
+          <p class="kpi-value">{{ dailyStats?.total_appointments || 0 }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-confirmed">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-content">
+          <h3>Confirmadas</h3>
+          <p class="kpi-value">{{ dailyStats?.confirmed_appointments || 0 }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-pending">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-content">
+          <h3>Total Pendientes</h3>
+          <p class="kpi-value">{{ dailyStats?.global_pending_appointments || 0 }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-revenue">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-content">
+          <h3>Ingresos (Estimado)</h3>
+          <p class="kpi-value">{{ formatCurrency(dailyStats?.estimated_revenue || 0) }}</p>
+        </div>
+      </div>
     </div>
 
-    <app-loading-spinner *ngIf="loading" [overlay]="true" message="Sincronizando panel..."></app-loading-spinner>
+    <!-- Próximas Citas (Resumen) -->
+    <div class="section-card">
+      <h2 class="card-title">Próximas Citas (Hoy)</h2>
 
-    <div *ngIf="!loading" class="dashboard-content">
-        <!-- Estadísticas -->
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="stat-icon">📊</div>
-                <div class="stat-value">{{ stats.total }}</div>
-                <div class="stat-label">Total Citas</div>
-            </div>
-            <div class="stat-card pending">
-                <div class="stat-icon">⏳</div>
-                <div class="stat-value">{{ stats.pending }}</div>
-                <div class="stat-label">Pendientes</div>
-            </div>
-            <div class="stat-card completed">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value">{{ stats.completed }}</div>
-                <div class="stat-label">Completadas</div>
-            </div>
-            <div class="stat-card cancelled">
-                <div class="stat-icon">❌</div>
-                <div class="stat-value">{{ stats.cancelled }}</div>
-                <div class="stat-label">Canceladas</div>
-            </div>
+      <div class="appointments-list" *ngIf="todayAppointments.length > 0; else noTodayAppointments">
+        <div class="appointment-item" *ngFor="let apt of todayAppointments">
+          <div class="appointment-time">
+            <span class="time">{{ apt.start_time.substring(0, 5) }}</span>
+          </div>
+          <div class="appointment-details">
+            <h4 class="customer-name">{{ apt.customer?.name || 'Cliente' }}</h4>
+            <p class="service-name">
+              {{ apt.service?.name }}
+              <span *ngIf="apt.additional"> + {{ apt.additional.name }}</span>
+            </p>
+          </div>
+          <div class="appointment-status">
+            <span class="status-badge" [ngClass]="getStatusClass(apt.status)">
+              {{ getStatusText(apt.status) }}
+            </span>
+          </div>
         </div>
+      </div>
 
-        <!-- Citas de Hoy -->
-        <div class="section">
-            <h2>📅 Citas de Hoy</h2>
-
-            <div *ngIf="todayAppointments.length === 0" class="empty-state">
-                <p>No hay citas programadas para hoy</p>
-            </div>
-
-            <div class="appointments-grid" *ngIf="todayAppointments.length > 0">
-                <div *ngFor="let apt of todayAppointments" class="appointment-card">
-                    <div class="apt-header">
-                        <div class="apt-time">🕐 {{ apt.start_time }}</div>
-                        <div class="apt-status" [ngClass]="getStatusClass(apt.status)">
-                            {{ getStatusText(apt.status) }}
-                        </div>
-                    </div>
-                    <div class="apt-body">
-                        <div class="apt-service">{{ apt.service_name || 'Servicio' }}</div>
-                        <div class="apt-customer">👤 {{ apt.customer_name || 'Cliente' }}</div>
-                        <div class="apt-additional" *ngIf="apt.additional_name">
-                            + {{ apt.additional_name }}
-                        </div>
-                    </div>
-                    <div class="apt-footer" *ngIf="apt.status === 'confirmed'">
-                        <button class="btn-complete" (click)="markAsCompleted(apt)">
-                            Marcar Completada
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Todas las Citas -->
-        <div class="section">
-            <h2>📋 Todas las Citas</h2>
-            <div class="appointments-list">
-                <div *ngFor="let apt of appointments" class="appointment-row">
-                    <div class="row-date">{{ formatDate(apt.date) }}</div>
-                    <div class="row-time">{{ apt.start_time }}</div>
-                    <div class="row-service">{{ apt.service_name || 'Servicio' }}</div>
-                    <div class="row-customer">{{ apt.customer_name || 'Cliente' }}</div>
-                    <div class="row-status" [ngClass]="getStatusClass(apt.status)">
-                        {{ getStatusText(apt.status) }}
-                    </div>
-                </div>
-            </div>
-        </div>
+      <ng-template #noTodayAppointments>
+        <p class="text-muted">No hay citas programadas para hoy.</p>
+      </ng-template>
     </div>
+  </div>
+
+  <!-- TAB: Agenda Completa (Próximas Citas) -->
+  <section *ngIf="activeTab === 'appointments'" class="tab-content">
+    <h2 class="section-title">Agenda (Próximas Citas)</h2>
+
+    <div class="appointments-management" *ngIf="upcomingAppointments.length > 0; else noAppointments">
+      <div class="appointment-card" *ngFor="let apt of upcomingAppointments">
+        <div class="appointment-header">
+          <div class="date-badge">
+            <span class="day">{{ formatDate(apt.date) }}</span>
+          </div>
+          <div class="appointment-time-block">
+            <span class="time-label">Hora</span>
+            <span class="time-value">{{ apt.start_time.substring(0, 5) }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="getStatusClass(apt.status)">
+            {{ getStatusText(apt.status) }}
+          </span>
+        </div>
+
+        <div class="appointment-body">
+          <div class="info-row">
+            <span class="label">Cliente:</span>
+            <span class="value">{{ apt.customer?.name || 'N/A' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Teléfono:</span>
+            <span class="value">{{ apt.customer?.phone || 'N/A' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Servicio:</span>
+            <span class="value">{{ apt.service?.name || 'N/A' }}</span>
+          </div>
+          <div class="info-row" *ngIf="apt.additional">
+            <span class="label">Adicional:</span>
+            <span class="value">{{ apt.additional.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Precio:</span>
+            <span class="value price">{{ formatCurrency((apt.service?.price || 0) + (apt.additional?.price || 0))
+              }}</span>
+          </div>
+          <div class="info-row" *ngIf="apt.notes">
+            <span class="label">Notas:</span>
+            <span class="value">{{ apt.notes }}</span>
+          </div>
+        </div>
+
+        <div class="appointment-actions">
+          <button class="btn-action btn-confirm" *ngIf="apt.status === 'pending'" (click)="confirmAppointment(apt)">
+            Confirmar
+          </button>
+          <button class="btn-action btn-complete" *ngIf="apt.status === 'confirmed'" (click)="completeAppointment(apt)">
+            Completar
+          </button>
+          <button class="btn-action btn-cancel" *ngIf="apt.status !== 'cancelled' && apt.status !== 'completed'"
+            (click)="cancelAppointment(apt)">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noAppointments>
+      <div class="empty-state-large">
+        <div class="empty-icon">📅</div>
+        <h3>No tienes citas próximas</h3>
+        <p>Tu agenda está libre por ahora 💅</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- TAB: Mis Servicios -->
+  <section *ngIf="activeTab === 'services'" class="tab-content">
+    <div class="section-header">
+      <h2 class="section-title">Gestión de Servicios</h2>
+      <button class="btn-primary" (click)="openServiceForm()">
+        + Nuevo Servicio
+      </button>
+    </div>
+
+    <div class="services-grid">
+      <div class="service-card" *ngFor="let service of services">
+        <div class="service-header">
+          <h3 class="service-name">{{ service.name }}</h3>
+          <div class="service-status">
+            <span class="status-indicator" [ngClass]="service.state ? 'active' : 'inactive'">
+              {{ service.state ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="service-details">
+          <div class="detail-item">
+            <span class="icon">⏱️</span>
+            <span class="text">{{ service.duration_minutes }} min</span>
+          </div>
+          <div class="detail-item">
+            <span class="icon">💰</span>
+            <span class="text">{{ formatCurrency(service.price) }}</span>
+          </div>
+        </div>
+
+        <div class="service-actions">
+          <button class="btn-edit" (click)="openServiceForm(service)">Editar</button>
+          <button class="btn-toggle" (click)="toggleService(service)">
+            {{ service.state ? 'Desactivar' : 'Activar' }}
+          </button>
+          <button class="btn-delete" (click)="deleteService(service)">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB: Mis Horarios (NUEVO) -->
+  <section *ngIf="activeTab === 'schedules'" class="tab-content">
+    <h2 class="section-title">Configuración de Horarios</h2>
+
+    <div class="schedule-container"
+      style="display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+
+      <!-- Lado Izquierdo: Horario Semanal -->
+      <div class="section-card">
+        <h3 class="card-title">Horario Semanal</h3>
+        <p class="text-muted" style="margin-bottom: 1rem;">Define tus horas laborales para cada día.</p>
+
+        <div class="schedule-list">
+          <div class="schedule-item" *ngFor="let day of schedules"
+            style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid #eee; margin-bottom: 0.5rem;">
+
+            <div style="min-width: 100px; font-weight: 600;">
+              {{ weekDays[day.day_of_week].name }}
+            </div>
+
+            <!-- Switch Trabajo -->
+            <label class="switch" style="margin-right: 1rem;">
+              <input type="checkbox" [(ngModel)]="day.is_working">
+              <span class="slider round"></span>
+            </label>
+
+            <!-- Inputs de Hora -->
+            <div class="time-inputs" *ngIf="day.is_working" style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="time" [(ngModel)]="day.start_time" class="form-control" style="width: auto;">
+              <span>a</span>
+              <input type="time" [(ngModel)]="day.end_time" class="form-control" style="width: auto;">
+            </div>
+
+            <span *ngIf="!day.is_working" class="text-muted">Descanso</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; text-align: right;">
+          <button class="btn-primary" (click)="saveSchedules()" [disabled]="loadingSchedules">
+            {{ loadingSchedules ? 'Guardando...' : '💾 Guardar Cambios' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Lado Derecho: Fechas Bloqueadas -->
+      <div class="section-card">
+        <h3 class="card-title">Días Libres / Bloqueados</h3>
+        <p class="text-muted" style="margin-bottom: 1rem;">Bloquea fechas específicas (vacaciones, feriados).</p>
+
+        <!-- Formulario Agregar -->
+        <div class="add-block-form" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+          <input type="date" [(ngModel)]="newBlockDate" class="form-control">
+          <input type="text" [(ngModel)]="newBlockReason" placeholder="Razón (ej. Vacaciones)" class="form-control">
+          <button class="btn-primary" (click)="addBlockDate()" [disabled]="!newBlockDate">Bloquear</button>
+        </div>
+
+        <!-- Lista de Bloqueos -->
+        <div class="blocked-list">
+          <div *ngIf="blockedDates.length === 0" class="empty-state-small">
+            No hay fechas bloqueadas.
+          </div>
+
+          <div class="blocked-item" *ngFor="let block of blockedDates"
+            style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #fee2e2; border-radius: 8px; margin-bottom: 0.5rem; color: #991b1b;">
+            <div>
+              <strong>{{ block.date }}</strong>
+              <span *ngIf="block.reason"> - {{ block.reason }}</span>
+            </div>
+            <button class="btn-delete-small" (click)="deleteBlockDate(block.date)"
+              style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #b91c1c;">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TAB: Estadísticas -->
+  <section *ngIf="activeTab === 'stats'" class="tab-content">
+    <h2 class="section-title">Reporte de Desempeño</h2>
+
+    <div class="stats-revenue-grid">
+      <div class="revenue-card">
+        <h3>Ingresos Semanales</h3>
+        <h2 class="revenue-amount">{{ formatCurrency(weekStats?.total_revenue || 0) }}</h2>
+        <p class="revenue-completed">Cobrado: {{ formatCurrency(weekStats?.completed_revenue || 0) }}</p>
+      </div>
+
+      <div class="revenue-card">
+        <h3>Ingresos Mensuales</h3>
+        <h2 class="revenue-amount">{{ formatCurrency(monthStats?.total_revenue || 0) }}</h2>
+        <p class="revenue-completed">Cobrado: {{ formatCurrency(monthStats?.completed_revenue || 0) }}</p>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <h3 class="card-title">Servicios Más Populares</h3>
+      <div class="popular-services-list">
+        <div class="popular-service-item" *ngFor="let service of popularServices; let i = index">
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="service-info">
+            <h4 class="service-name">{{ service.service_name }}</h4>
+            <p class="service-stats">{{ service.total_bookings }} citas • {{ formatCurrency(service.total_revenue) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL DE SERVICIO (Para Mis Servicios) -->
+  <div class="modal-overlay" *ngIf="showServiceForm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>{{ editingService ? 'Editar Servicio' : 'Nuevo Servicio' }}</h2>
+        <button class="btn-close" (click)="closeServiceForm()">×</button>
+      </div>
+      <div class="modal-body" style="padding: 2rem;">
+        <form [formGroup]="serviceForm" (ngSubmit)="saveService()">
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nombre del Servicio</label>
+            <input type="text" formControlName="name" class="form-control"
+              style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Duración (minutos)</label>
+            <input type="number" formControlName="duration_minutes" class="form-control"
+              style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Precio (COP)</label>
+            <input type="number" formControlName="price" class="form-control"
+              style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 8px;">
+          </div>
+
+          <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <button type="button" class="btn-secondary" (click)="closeServiceForm()"
+              style="padding: 0.75rem 1.5rem; background: #f3f4f6; border: none; border-radius: 8px; cursor: pointer;">Cancelar</button>
+            <button type="submit" class="btn-primary" [disabled]="serviceForm.invalid"
+              style="padding: 0.75rem 1.5rem; background: #8b5cf6; color: white; border: none; border-radius: 8px; cursor: pointer;">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<!-- Loading Spinner -->
+<app-loading-spinner *ngIf="loading"></app-loading-spinner>

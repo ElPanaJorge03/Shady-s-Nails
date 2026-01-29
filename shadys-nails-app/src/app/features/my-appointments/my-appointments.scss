@@ -246,6 +246,15 @@
             box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
         }
     }
+
+    .cancel-notice {
+        color: #999;
+        font-size: 0.9rem;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
 }
 
 // ==================== RESPONSIVE ====================
@@ -278,65 +287,89 @@
     }
 
     .history-card {
-        background: #f8f9fa;
+        background: #fff;
         border-radius: 12px;
         padding: 1rem;
         display: flex;
         align-items: center;
         gap: 1rem;
-        border: 1px solid #eee;
+        border: 1px solid #e0e0e0;
         transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
         &:hover {
-            background: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #b39ddb;
         }
 
         &.cancelled {
-            opacity: 0.6;
             background: #fff5f5;
+            border-color: #fadbd8;
+
+            .history-date {
+                opacity: 0.7;
+            }
         }
 
         .history-date {
-            background: white;
-            padding: 0.5rem;
+            background: #f3f0ff;
+            padding: 0.6rem;
             border-radius: 8px;
             text-align: center;
-            min-width: 50px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            min-width: 60px;
+            border: 1px solid #d1c4e9;
 
             .day {
                 display: block;
-                font-size: 1.2rem;
-                font-weight: 700;
-                color: #667eea;
+                font-size: 1.4rem;
+                font-weight: 800;
+                color: #512da8;
+                /* Morado oscuro para mejor contraste */
+                line-height: 1;
             }
 
             .month {
-                font-size: 0.8rem;
+                font-size: 0.85rem;
                 text-transform: uppercase;
-                color: #999;
+                color: #5e35b1;
+                font-weight: 600;
+                margin-top: 2px;
             }
         }
 
         .history-info {
+            flex: 1;
+
             .service-name {
-                font-weight: 600;
-                color: #333;
-                font-size: 0.9rem;
+                font-weight: 700;
+                color: #2c3e50;
+                font-size: 1rem;
+                margin-bottom: 0.4rem;
             }
 
             .status-badge {
                 font-size: 0.75rem;
+                padding: 0.25rem 0.6rem;
+                border-radius: 12px;
+                font-weight: 700;
                 display: inline-block;
-                margin-top: 0.25rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
 
                 &.status-completed {
-                    color: #2ecc71;
+                    background-color: #d1e7dd;
+                    color: #0f5132;
+                }
+
+                &.status-confirmed {
+                    background-color: #cfe2ff;
+                    color: #084298;
                 }
 
                 &.status-cancelled {
-                    color: #e74c3c;
+                    background-color: #f8d7da;
+                    color: #842029;
                 }
             }
         }

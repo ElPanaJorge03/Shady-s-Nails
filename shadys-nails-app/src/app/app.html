@@ -4,8 +4,8 @@
       <h1 (click)="goHome()">💅 Shady's Nails</h1>
       <div class="header-actions">
         <button class="btn-nav" *ngIf="isWorker()" (click)="goToDashboard()">💼 Dashboard</button>
-        <button class="btn-nav" *ngIf="isWorker()" (click)="goToSettings()">⚙️ Ajustes</button>
         <button class="btn-nav" *ngIf="isCustomer()" (click)="goToMyAppointments()">📋 Mis Citas</button>
+        <button class="btn-nav" *ngIf="currentUser" (click)="goToSettings()">⚙️ Perfil</button>
         <span class="user-name" *ngIf="currentUser">{{ currentUser.name }}</span>
         <button class="btn-logout" (click)="logout()">Cerrar Sesión</button>
       </div>

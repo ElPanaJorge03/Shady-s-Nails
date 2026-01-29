@@ -102,6 +102,49 @@
     }
 }
 
+.forgot-password {
+    text-align: right;
+    margin-top: 0.75rem;
+
+    a {
+        font-size: 0.85rem;
+        color: #666;
+        text-decoration: none;
+        transition: color 0.3s;
+
+        &:hover {
+            color: #667eea;
+        }
+    }
+}
+
+.divider {
+    margin: 1.5rem 0;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #999;
+    font-size: 0.85rem;
+
+    &::before,
+    &::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #eee;
+    }
+
+    span {
+        padding: 0 10px;
+    }
+}
+
+.google-login-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    min-height: 40px;
+}
+
 .register-link {
     text-align: center;
     margin-top: 1.5rem;

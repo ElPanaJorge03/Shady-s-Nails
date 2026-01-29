@@ -1,0 +1,64 @@
+<div class="profile-container">
+    <h1>⚙️ Configuración de Perfil</h1>
+
+    <div class="loading-spinner" *ngIf="loading">
+        <app-loading-spinner></app-loading-spinner>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+
+        <h3>Información Personal</h3>
+
+        <div class="form-group">
+            <label for="name">Nombre Completo</label>
+            <input id="name" type="text" formControlName="name">
+            <div class="error-msg"
+                *ngIf="profileForm.get('name')?.touched && profileForm.get('name')?.hasError('required')">
+                El nombre es requerido.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Teléfono / Celular</label>
+            <input id="phone" type="tel" formControlName="phone" placeholder="300 123 4567">
+            <div class="error-msg"
+                *ngIf="profileForm.get('phone')?.touched && profileForm.get('phone')?.hasError('required')">
+                El teléfono es requerido.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo Electrónico (No editable)</label>
+            <input id="email" type="email" [value]="currentUser?.email" disabled style="background-color: #f9f9f9;">
+        </div>
+
+        <div class="section-divider"></div>
+
+        <h3>Seguridad (Opcional)</h3>
+        <p style="font-size: 0.9em; color: #888; margin-bottom: 1rem;">Deja estos campos vacíos si no quieres cambiar tu
+            contraseña.</p>
+
+        <div class="form-group">
+            <label for="password">Nueva Contraseña</label>
+            <input id="password" type="password" formControlName="password" placeholder="Nueva contraseña">
+            <div class="error-msg" *ngIf="profileForm.get('password')?.hasError('minlength')">
+                Mínimo 6 caracteres.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmar Contraseña</label>
+            <input id="confirmPassword" type="password" formControlName="confirmPassword"
+                placeholder="Repite la contraseña">
+            <div class="error-msg"
+                *ngIf="profileForm.hasError('mismatch') && profileForm.get('confirmPassword')?.touched">
+                Las contraseñas no coinciden.
+            </div>
+        </div>
+
+        <button type="submit" class="btn-save" [disabled]="profileForm.invalid || submitting">
+            <span *ngIf="!submitting">💾 Guardar Cambios</span>
+            <span *ngIf="submitting">Guardando...</span>
+        </button>
+    </form>
+</div>

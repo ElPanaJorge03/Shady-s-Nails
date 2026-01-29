@@ -166,6 +166,7 @@ def get_update_template(
     """
 
 
+
 def get_cancellation_template(customer_name: str, service_name: str, date: str, time: str):
     return f"""
     <html>
@@ -177,6 +178,93 @@ def get_cancellation_template(customer_name: str, service_name: str, date: str, 
             <p>Si esto fue un error o deseas agendar una nueva cita, puedes hacerlo directamente en nuestra aplicación.</p>
             <br>
             <p>Atentamente,<br><strong>Shady's Nails</strong></p>
+        </div>
+    </body>
+    </html>
+    """
+
+def get_request_received_template(customer_name: str, service_name: str, date: str, time: str):
+    """Template para el cliente cuando solicita una cita (estado pendiente)"""
+    return f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #fff3cd; border-radius: 10px;">
+            <h2 style="color: #856404;">⏳ Solicitud Recibida</h2>
+            <p>Hola <strong>{customer_name}</strong>,</p>
+            <p>Hemos recibido tu solicitud de cita en <strong>Shady's Nails</strong>.</p>
+            <p>Tu cita está <strong>pendiente de aprobación</strong>. Te notificaremos por correo tan pronto como sea confirmada por nuestro equipo.</p>
+            <hr style="border: 0; border-top: 1px solid #eee;">
+            <p><strong>Detalles solicitados:</strong></p>
+            <ul>
+                <li><strong>Servicio:</strong> {service_name}</li>
+                <li><strong>Fecha:</strong> {date}</li>
+                <li><strong>Hora:</strong> {time}</li>
+            </ul>
+            <br>
+            <p>Atentamente,<br><strong>Shady's Nails</strong></p>
+        </div>
+    </body>
+    </html>
+    """
+
+def get_new_appointment_request_admin_template(worker_name: str, customer_name: str, service_name: str, date: str, time: str):
+    """Template para el worker cuando recibe una nueva solicitud"""
+    return f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #d1ecf1; border-radius: 10px;">
+            <h2 style="color: #0c5460;">💅 Nueva Solicitud de Cita</h2>
+            <p>Hola <strong>{worker_name}</strong>,</p>
+            <p>Tienes una nueva solicitud de cita de <strong>{customer_name}</strong>.</p>
+            <hr style="border: 0; border-top: 1px solid #eee;">
+            <ul>
+                <li><strong>Cliente:</strong> {customer_name}</li>
+                <li><strong>Servicio:</strong> {service_name}</li>
+                <li><strong>Fecha:</strong> {date}</li>
+                <li><strong>Hora:</strong> {time}</li>
+            </ul>
+            <p>Por favor ingresa a tu Dashboard para <strong>Aprobar</strong> o <strong>Rechazar</strong> esta solicitud.</p>
+        </div>
+    </body>
+    </html>
+    """
+
+def get_completion_template(customer_name: str, service_name: str):
+    """Template para el cliente cuando la cita se completa"""
+    return f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #d4edda; border-radius: 10px;">
+            <h2 style="color: #155724;">✨ ¡Gracias por tu visita!</h2>
+            <p>Hola <strong>{customer_name}</strong>,</p>
+            <p>Esperamos que hayas disfrutado tu servicio de <strong>{service_name}</strong>.</p>
+            <p>Tu cita ha sido marcada como <strong>completada</strong>.</p>
+            <p>Nos encantaría verte de nuevo pronto para seguir cuidando de ti.</p>
+            <br>
+            <p>¡Hasta la próxima!</p>
+            <p>Atentamente,<br><strong>Shady's Nails Team</strong></p>
+        </div>
+    </body>
+    </html>
+    """
+
+def get_reset_password_template(customer_name: str, code: str):
+    """Template para recuperación de contraseña"""
+    return f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #d1ecf1; border-radius: 10px; text-align: center;">
+            <h2 style="color: #6f42c1;">🔐 Recuperación de Contraseña</h2>
+            <p>Hola <strong>{customer_name}</strong>,</p>
+            <p>Has solicitado restablecer tu contraseña en <strong>Shady's Nails</strong>.</p>
+            <p>Usa el siguiente código para completar el proceso:</p>
+            <div style="background-color: #f8f9fa; padding: 20px; font-size: 2rem; font-weight: bold; letter-spacing: 5px; color: #6f42c1; border-radius: 8px; margin: 20px 0;">
+                {code}
+            </div>
+            <p>Este código expirará en <strong>15 minutos</strong>.</p>
+            <p style="font-size: 0.8em; color: #888;">Si no solicitaste este cambio, puedes ignorar este correo.</p>
+            <br>
+            <p>Atentamente,<br><strong>Shady's Nails Team</strong></p>
         </div>
     </body>
     </html>

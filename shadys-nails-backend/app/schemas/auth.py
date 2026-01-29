@@ -13,8 +13,15 @@ class RegisterRequest(BaseModel):
     name: str
     phone: Optional[str] = None
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    password: Optional[str] = None
+
+
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str
 
 class TokenData(BaseModel):
@@ -32,3 +39,14 @@ class UserResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str

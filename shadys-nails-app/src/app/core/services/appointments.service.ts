@@ -15,13 +15,36 @@ export interface Appointment {
     status: string;
     notes?: string;
     created_at: string;
-    // Información expandida
+    // Información expandida (nombres simples)
     worker_name?: string;
     customer_name?: string;
     service_name?: string;
     additional_name?: string;
     service_price?: number;
     additional_price?: number;
+    // Objetos anidados (para dashboard)
+    customer?: {
+        id: number;
+        name: string;
+        phone: string;
+        email?: string;
+    };
+    service?: {
+        id: number;
+        name: string;
+        duration_minutes: number;
+        price: number;
+    };
+    worker?: {
+        id: number;
+        name: string;
+    };
+    additional?: {
+        id: number;
+        name: string;
+        price: number;
+        extra_duration: number;
+    };
 }
 
 @Injectable({

@@ -16,6 +16,10 @@ export const routes: Routes = [
         component: RegisterComponent
     },
     {
+        path: 'forgot-password',
+        loadComponent: () => import('./auth/forgot-password/forgot-password').then(m => m.ForgotPasswordComponent)
+    },
+    {
         path: 'services',
         component: ServicesComponent,
         canActivate: [authGuard]
@@ -34,6 +38,11 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./features/worker-dashboard/worker-dashboard').then(m => m.WorkerDashboardComponent),
         canActivate: [authGuard, workerGuard]
+    },
+    {
+        path: 'settings',
+        loadComponent: () => import('./features/profile-settings/profile-settings').then(m => m.ProfileSettingsComponent),
+        canActivate: [authGuard]
     },
     {
         path: '',

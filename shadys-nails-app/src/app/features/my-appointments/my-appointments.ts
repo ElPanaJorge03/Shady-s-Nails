@@ -65,6 +65,11 @@ export class MyAppointmentsComponent implements OnInit {
   }
 
   cancelAppointment(appointment: Appointment): void {
+    if (!this.canCancel(appointment)) {
+      this.toastService.error('Lo sentimos, no puedes cancelar con menos de 2 horas de anticipación.');
+      return;
+    }
+
     if (!confirm(`¿Estás seguro de cancelar la cita del ${this.formatDate(appointment.date)} a las ${appointment.start_time}?`)) {
       return;
     }
@@ -76,9 +81,30 @@ export class MyAppointmentsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cancelling appointment:', err);
-        this.toastService.error('Error al cancelar la cita. Intenta de nuevo.');
+        const errorMsg = err.error?.detail || 'Error al cancelar la cita. Intenta de nuevo.';
+        this.toastService.error(errorMsg);
       }
     });
+  }
+
+  canCancel(appointment: Appointment): boolean {
+    // Si la cita ya está cancelada o completada, no tiene sentido
+    if (appointment.status === 'cancelled' || appointment.status === 'completed') return false;
+
+    try {
+      // Combinar fecha y hora
+      const aptDate = new Date(appointment.date);
+      const timeParts = appointment.start_time.split(':');
+      aptDate.setHours(parseInt(timeParts[0]), parseInt(timeParts[1]), 0, 0);
+
+      const now = new Date();
+      const diffMs = aptDate.getTime() - now.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      return diffHours >= 2;
+    } catch (e) {
+      return false;
+    }
   }
 
   formatDate(dateString: string): string {

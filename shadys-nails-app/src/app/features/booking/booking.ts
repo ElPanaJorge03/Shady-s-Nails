@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs/operators';
 import { ApiService, Service } from '../../core/services/api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { AppointmentsService } from '../../core/services/appointments.service';
@@ -32,6 +33,11 @@ interface TimeSlot {
   available: boolean;
 }
 
+interface Worker {
+  id: number;
+  name: string;
+}
+
 @Component({
   selector: 'app-booking',
   standalone: true,
@@ -41,12 +47,14 @@ interface TimeSlot {
 })
 export class BookingComponent implements OnInit {
   bookingForm: FormGroup;
-  selectedWorkerId?: number; // dinámico: evita hardcode de worker_id
+  selectedWorkerId?: number;
   services: Service[] = [];
+  workers: Worker[] = [];
   additionals: Additional[] = [];
   availableSlots: TimeSlot[] = [];
   selectedService?: Service;
   loading = true; // Iniciar en true
+  loadingSlots = false;
 
   // Calendario - Solo próximos 15 días
   calendarDays: CalendarDay[] = [];
@@ -74,6 +82,7 @@ export class BookingComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.loadWorkers(); // Cargar workers primero
     this.loadServices();
     this.loadAdditionals();
     this.generateCalendar();
@@ -86,6 +95,19 @@ export class BookingComponent implements OnInit {
     });
   }
 
+  loadWorkers(): void {
+    this.http.get<Worker[]>(`${environment.apiUrl}/workers`).subscribe({
+      next: (workers) => {
+        this.workers = workers;
+        if (workers.length > 0) {
+          this.selectedWorkerId = workers[0].id; // Seleccionar el primer worker por defecto
+          console.log('✅ Worker seleccionado por defecto:', this.selectedWorkerId);
+        }
+      },
+      error: (err) => console.error('❌ Error loading workers:', err)
+    });
+  }
+
   loadServices(): void {
     console.log('🔍 Cargando servicios...');
     this.apiService.getServices().subscribe({
@@ -93,6 +115,12 @@ export class BookingComponent implements OnInit {
         console.log('✅ Servicios cargados:', services);
         this.services = services;
         this.loading = false;
+
+        // Si ya hay serviceId en el form, actualizar selectedService
+        if (this.bookingForm.get('serviceId')?.value) {
+          this.onServiceChange();
+        }
+
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -118,6 +146,10 @@ export class BookingComponent implements OnInit {
   onServiceChange(): void {
     const serviceId = this.bookingForm.get('serviceId')?.value;
     this.selectedService = this.services.find(s => s.id === +serviceId);
+
+    // Resetear horario si cambia el servicio
+    this.bookingForm.patchValue({ time: '' });
+
     if (this.selectedDate) {
       this.loadAvailableSlots();
     }
@@ -182,7 +214,12 @@ export class BookingComponent implements OnInit {
     }
 
     const additionalId = this.bookingForm.get('additionalId')?.value;
-    const workerId = this.selectedWorkerId ?? 5; // Default to production worker_id
+
+    // Verificar si tenemos un worker seleccionado, si no, usar 4 como fallback o esperar a que carguen
+    const workerId = this.selectedWorkerId ?? (this.workers.length > 0 ? this.workers[0].id : 4);
+
+    console.log(`🔍 Buscando disponibilidad: Worker=${workerId}, Date=${date}, Service=${serviceId}`);
+
     const params: any = {
       worker_id: workerId,
       date: date,
@@ -194,18 +231,27 @@ export class BookingComponent implements OnInit {
       params.additional_id = additionalId.toString();
     }
 
-    this.http.get<any>(`${environment.apiUrl}/availability`, { params }).subscribe({
-      next: (response) => {
-        this.availableSlots = response.available_slots.map((slot: string) => ({
-          time: slot,
-          available: true
-        }));
-      },
-      error: (err) => {
-        console.error('Error loading slots:', err);
-        this.availableSlots = [];
-      }
-    });
+    this.loadingSlots = true;
+    this.availableSlots = [];
+
+    this.http.get<any>(`${environment.apiUrl}/availability`, { params })
+      .pipe(finalize(() => {
+        this.loadingSlots = false;
+        this.cdr.markForCheck();
+      }))
+      .subscribe({
+        next: (response) => {
+          console.log('✅ Slots recibidos:', response.available_slots.length);
+          this.availableSlots = response.available_slots.map((slot: string) => ({
+            time: slot,
+            available: true
+          }));
+        },
+        error: (err) => {
+          console.error('❌ Error loading slots:', err);
+          this.availableSlots = [];
+        }
+      });
   }
 
   selectTime(slot: TimeSlot): void {
@@ -236,6 +282,26 @@ export class BookingComponent implements OnInit {
     });
 
     return groups.filter(g => g.slots.length > 0);
+  }
+
+  getEstimatedTotal(): string {
+    if (!this.selectedService) return '$0';
+
+    let total = this.selectedService.price;
+
+    const additionalId = this.bookingForm.get('additionalId')?.value;
+    if (additionalId) {
+      const additional = this.additionals.find(a => a.id === +additionalId);
+      if (additional) {
+        total += additional.price;
+      }
+    }
+
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(total);
   }
 
   // ==================== SUBMIT ====================
@@ -287,7 +353,7 @@ export class BookingComponent implements OnInit {
   }
 
   private createAppointmentForUser(customerId: number, formValue: any): void {
-    const workerId = this.selectedWorkerId ?? 5; // Default to production worker_id (Gina Paola Martinez Barrera)
+    const workerId = this.selectedWorkerId ?? 4; // Gina Paola Martinez Barrera
 
     const appointmentData = {
       worker_id: workerId,
@@ -316,6 +382,11 @@ export class BookingComponent implements OnInit {
   }
 
   cancel(): void {
+    this.router.navigate(['/services']);
+  }
+
+  changeService(): void {
+    // Navegar de vuelta a la selección de servicios
     this.router.navigate(['/services']);
   }
 

@@ -20,3 +20,7 @@ bcrypt==3.2.2  # Pin to 3.2.2 for passlib compatibility
 
 # HTTP Client
 requests>=2.31.0
+
+# Google OAuth
+google-auth>=2.27.0
+google-auth-oauthlib>=1.2.0

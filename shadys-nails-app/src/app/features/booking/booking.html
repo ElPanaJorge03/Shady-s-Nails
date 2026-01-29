@@ -1,88 +1,112 @@
-<div class="booking-container">
-    <div class="booking-card">
+<div class="booking-page">
+    <div class="booking-container">
+        <!-- Header -->
         <div class="booking-header">
-            <button class="btn-back" (click)="cancel()">← Volver</button>
-            <h1>📅 Agendar Cita</h1>
+            <button class="btn-back" (click)="cancel()">
+                <span class="icon">←</span> Volver
+            </button>
+            <h1>✨ Agendar tu Cita</h1>
+            <p class="subtitle">Solo falta poco para consentirte</p>
         </div>
 
-        <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+        <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()" class="booking-form">
 
-            <!-- PASO 1: Servicio -->
-            <div class="step-section">
-                <h2>1. Selecciona tu servicio</h2>
-
-                <div *ngIf="loading" class="loading-message">
-                    Cargando servicios...
+            <!-- SECCIÓN 1: SERVICIO SELECCIONADO -->
+            <div class="section-card service-section" *ngIf="selectedService">
+                <div class="section-header">
+                    <span class="step-badge">1</span>
+                    <h2>Servicio Seleccionado</h2>
                 </div>
 
-                <div class="service-selector" *ngIf="!loading">
-                    <div *ngFor="let service of services" class="service-option"
-                        [class.selected]="bookingForm.get('serviceId')?.value == service.id"
-                        (click)="bookingForm.patchValue({serviceId: service.id}); onServiceChange()">
-                        <div class="service-name">{{ service.name }}</div>
-                        <div class="service-details">
-                            <span class="duration">⏱️ {{ service.duration_minutes }} min</span>
-                            <span class="price">${{ service.price | number }}</span>
-                        </div>
+                <div class="selected-service-card">
+                    <div class="service-icon">💅</div>
+                    <div class="service-info">
+                        <h3>{{ selectedService.name }}</h3>
+                        <p class="price-tag">${{ selectedService.price | number }}</p>
                     </div>
-                </div>
-
-                <div *ngIf="!loading && services.length === 0" class="info-message">
-                    No hay servicios disponibles
+                    <div class="service-meta">
+                        <span class="duration">⏱️ {{ selectedService.duration_minutes }} min</span>
+                    </div>
+                    <button type="button" class="btn-change" (click)="changeService()">Cambiar</button>
                 </div>
             </div>
 
-            <!-- PASO 2: Adicional (opcional) -->
-            <div class="step-section" *ngIf="selectedService">
-                <h2>2. ¿Deseas agregar algo extra? (opcional)</h2>
-                <div class="additional-selector">
-                    <div class="additional-option" [class.selected]="!bookingForm.get('additionalId')?.value"
+            <!-- SECCIÓN 2: ADICIONALES -->
+            <div class="section-card additional-section" *ngIf="selectedService">
+                <div class="section-header">
+                    <span class="step-badge">2</span>
+                    <h2>¿Algo extra? (Opcional)</h2>
+                </div>
+
+                <div class="additionals-grid">
+                    <!-- Opción Ninguno -->
+                    <div class="additional-card" [class.selected]="!bookingForm.get('additionalId')?.value"
                         (click)="bookingForm.patchValue({additionalId: ''}); loadAvailableSlots()">
-                        <div class="additional-name">Sin adicional</div>
+                        <div class="check-circle"></div>
+                        <div class="content">
+                            <h4>Solo el servicio</h4>
+                            <p>Sin adicionales</p>
+                        </div>
                     </div>
-                    <div *ngFor="let additional of additionals" class="additional-option"
+
+                    <!-- Lista de Adicionales -->
+                    <div *ngFor="let additional of additionals" class="additional-card"
                         [class.selected]="bookingForm.get('additionalId')?.value == additional.id"
                         (click)="bookingForm.patchValue({additionalId: additional.id}); loadAvailableSlots()">
-                        <div class="additional-name">{{ additional.name }}</div>
-                        <div class="additional-details">
-                            <span class="duration">+{{ additional.extra_duration }} min</span>
-                            <span class="price">+${{ additional.price | number }}</span>
+                        <div class="check-circle"></div>
+                        <div class="content">
+                            <h4>{{ additional.name }}</h4>
+                            <p class="meta">+{{ additional.extra_duration }} min • +${{ additional.price | number }}</p>
                         </div>
                     </div>
                 </div>
-
-                <div class="summary-box" *ngIf="selectedService">
-                    <strong>Resumen:</strong> {{ getSelectedServiceInfo() }}
-                </div>
             </div>
 
-            <!-- PASO 3: Fecha - Vista de 15 días -->
-            <div class="step-section" *ngIf="selectedService">
-                <h2>3. Elige la fecha</h2>
+            <!-- SECCIÓN 3: FECHA -->
+            <div class="section-card date-section" *ngIf="selectedService">
+                <div class="section-header">
+                    <span class="step-badge">3</span>
+                    <h2>Elige el día</h2>
+                </div>
 
-                <div class="days-scroll">
-                    <div *ngFor="let day of calendarDays" class="day-card" [class.today]="day.isToday"
-                        [class.selected]="day.isSelected" (click)="selectDate(day)">
-                        <div class="day-name">{{ day.dayName }}</div>
-                        <div class="day-number">{{ day.day }}</div>
-                        <div class="month-name">{{ day.monthName }}</div>
+                <div class="calendar-scroll-wrapper">
+                    <div class="calendar-scroll">
+                        <div *ngFor="let day of calendarDays" class="date-card" [class.selected]="day.isSelected"
+                            [class.today]="day.isToday" (click)="selectDate(day)">
+                            <span class="day-name">{{ day.dayName }}</span>
+                            <span class="day-number">{{ day.day }}</span>
+                            <span class="month-name">{{ day.monthName }}</span>
+                            <div class="selection-indicator"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- PASO 4: Hora -->
-            <div class="step-section" *ngIf="selectedDate">
-                <h2>4. Selecciona la hora</h2>
-
-                <div class="info-message" *ngIf="availableSlots.length === 0">
-                    No hay horarios disponibles para esta fecha. Intenta con otra fecha.
+            <!-- SECCIÓN 4: HORA -->
+            <div class="section-card time-section" *ngIf="selectedDate">
+                <div class="section-header">
+                    <span class="step-badge">4</span>
+                    <h2>Selecciona la hora</h2>
                 </div>
 
-                <div class="time-grid" *ngIf="availableSlots.length > 0">
+                <div class="loading-slots" *ngIf="loadingSlots">
+                    <div class="spinner"></div> Buscando horarios...
+                </div>
+
+                <div class="empty-slots" *ngIf="!loadingSlots && availableSlots.length === 0">
+                    <span class="icon">📅</span>
+                    <p>No hay citas disponibles para esta fecha.</p>
+                    <button type="button" class="btn-link">Prueba otro día</button>
+                </div>
+
+                <div class="time-slots-container" *ngIf="!loadingSlots && availableSlots.length > 0">
                     <div *ngFor="let group of getTimeSlotGroups()" class="time-group">
-                        <div class="group-label">{{ group.label }}</div>
-                        <div class="group-slots">
-                            <button type="button" *ngFor="let slot of group.slots" class="time-slot"
+                        <h3 class="group-title">
+                            <span class="icon">{{ group.label.includes('Mañana') ? '🌅' : '🌆' }}</span>
+                            {{ group.label }}
+                        </h3>
+                        <div class="slots-grid">
+                            <button type="button" *ngFor="let slot of group.slots" class="time-pill"
                                 [class.selected]="isTimeSelected(slot.time)" (click)="selectTime(slot)">
                                 {{ slot.time }}
                             </button>
@@ -91,22 +115,31 @@
                 </div>
             </div>
 
-            <!-- PASO 5: Confirmar cita -->
-            <div class="step-section" *ngIf="bookingForm.get('time')?.value">
-                <h2>5. Confirmar cita</h2>
-
-                <div class="form-group">
-                    <label>Notas (opcional)</label>
-                    <textarea formControlName="notes" rows="3"
-                        placeholder="Alguna preferencia o comentario..."></textarea>
+            <!-- SECCIÓN 5: CONFIRMACIÓN -->
+            <div class="section-card confirm-section" *ngIf="bookingForm.get('time')?.value">
+                <div class="section-header">
+                    <span class="step-badge">5</span>
+                    <h2>Confirmación</h2>
                 </div>
 
-                <!-- Botón de confirmar -->
-                <button type="submit" class="btn-confirm" [disabled]="bookingForm.invalid || loading">
-                    <span *ngIf="!loading">✓ Confirmar Cita</span>
-                    <span *ngIf="loading">Agendando...</span>
+                <div class="notes-field">
+                    <label>¿Alguna nota o preferencia especial?</label>
+                    <textarea formControlName="notes" placeholder="Ej: Quiero un diseño de flores..."></textarea>
+                </div>
+
+                <div class="summary-total">
+                    <div class="total-row">
+                        <span>Total estimado:</span>
+                        <span class="amount">{{ getEstimatedTotal() }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-confirm-booking" [disabled]="bookingForm.invalid || loading">
+                    <span *ngIf="!loading">✨ Confirmar Reserva</span>
+                    <span *ngIf="loading" class="spin">↻</span>
                 </button>
             </div>
+
         </form>
     </div>
 </div>

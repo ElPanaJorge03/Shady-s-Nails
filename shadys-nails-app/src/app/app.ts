@@ -65,7 +65,7 @@ export class App implements OnInit {
   }
 
   goToSettings(): void {
-    this.toastService.info('Configuraciones próximamente (Perfil, Precios, Horarios)');
+    this.router.navigate(['/settings']);
   }
 
   isWorker(): boolean {

@@ -12,4 +12,9 @@ class User(Base):
     phone = Column(String(20))
     role = Column(String(50), default='customer')  # 'customer' o 'worker'
     is_active = Column(Boolean, default=True)
+    
+    # Campos para recuperación de contraseña
+    reset_token = Column(String, nullable=True)
+    reset_token_expires = Column(DateTime, nullable=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -51,9 +51,14 @@
                         </div>
 
                         <div class="appointment-footer">
-                            <button class="btn-cancel" (click)="cancelAppointment(appointment)">
+                            <button *ngIf="canCancel(appointment)" class="btn-cancel"
+                                (click)="cancelAppointment(appointment)">
                                 Cancelar Cita
                             </button>
+                            <span *ngIf="!canCancel(appointment) && appointment.status !== 'cancelled'"
+                                class="cancel-notice">
+                                🔒 No cancelable (menos de 2h)
+                            </span>
                         </div>
                     </div>
                 </div>

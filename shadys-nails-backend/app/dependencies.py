@@ -1,3 +1,18 @@
+from typing import List, Optional
+
+def require_roles(roles: List[str]):
+    """
+    Dependency para requerir uno o varios roles específicos en una ruta.
+    Uso: Depends(require_roles(["admin"]))
+    """
+    def role_checker(current_user: User = Depends(get_current_user)):
+        if current_user.role not in roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"No tienes permisos para acceder a este recurso. Rol requerido: {roles}"
+            )
+        return current_user
+    return role_checker
 """
 Dependencies compartidas para autenticación
 """

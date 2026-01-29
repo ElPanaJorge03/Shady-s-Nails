@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ApiService, Service } from '../../core/services/api.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
     selector: 'app-services',
@@ -18,7 +19,8 @@ export class ServicesComponent implements OnInit {
     constructor(
         private apiService: ApiService,
         private cdr: ChangeDetectorRef,
-        private router: Router
+        private router: Router,
+        private authService: AuthService
     ) { }
 
     bookService(service: Service): void {
@@ -27,7 +29,22 @@ export class ServicesComponent implements OnInit {
         });
     }
 
+    formatPrice(price: number): string {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        }).format(price);
+    }
+
     ngOnInit() {
+        // 🔒 AUTO-REDIRECT: Si eres worker, te vas al dashboard
+        const user = this.authService.getCurrentUser();
+        if (user && user.role === 'worker') {
+            this.router.navigate(['/dashboard']);
+            return;
+        }
+
         this.loadServices();
     }
 

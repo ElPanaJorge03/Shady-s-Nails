@@ -13,6 +13,8 @@ from app.models.worker import Worker
 from app.models.service import Service
 from app.models.additional import Additional
 from app.models.appointment import Appointment
+from app.models.schedule import WorkerSchedule, BlockedDate # Nuevos modelos
+
 
 
 
@@ -23,7 +25,8 @@ from app.routers.worker import router as worker_router
 from app.routers.customer import router as customer_router
 from app.routers.additional import router as additional_router
 from app.routers.auth import router as auth_router
-
+from app.routers.stats import router as stats_router
+from app.routers.schedule import router as schedule_router # Nuevo router
 
 
 
@@ -74,6 +77,8 @@ app.include_router(service_router)
 app.include_router(worker_router)
 app.include_router(customer_router)
 app.include_router(additional_router)
+app.include_router(stats_router)
+app.include_router(schedule_router)  # Nuevo: horarios
 # ─────────────────────────────────────────────
 # Crear tablas en PostgreSQL
 # ─────────────────────────────────────────────
