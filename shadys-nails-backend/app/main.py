@@ -1,22 +1,10 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from sqlalchemy import text
 
 from app.database import engine, Base
-
-# 🔹 IMPORTANTE: importar CLASES, no archivos
-from app.models.customer import Customer
-print("🧪 Customer cargado:", Customer)
-
-from app.models.worker import Worker
-from app.models.service import Service
-from app.models.additional import Additional
-from app.models.appointment import Appointment
-from app.models.schedule import WorkerSchedule, BlockedDate # Nuevos modelos
-
-
-
 
 from app.routers.appointment import router as appointment_router
 from app.routers.availability import router as availability_router
@@ -40,12 +28,27 @@ with engine.connect() as conn:
         print("📌 BASE REAL:", row)
 
 
+from init_prod import init_production_data
+
+# ─────────────────────────────────────────────
+# Definir Lifespan (Carga de datos al iniciar)
+# ─────────────────────────────────────────────
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ejecutar al iniciar el servidor
+    try:
+        init_production_data()
+    except Exception as e:
+        print(f"⚠️ Error en init_production_data: {e}")
+    yield
+
 # ─────────────────────────────────────────────
 # Crear aplicación FastAPI
 # ─────────────────────────────────────────────
 app = FastAPI(
     title="Shadys Nails API",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan
 )
 
 # Configurar CORS para permitir peticiones desde Angular
