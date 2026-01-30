@@ -4,7 +4,7 @@ from datetime import date, time, datetime, timedelta
 from typing import Optional
 from pydantic import BaseModel
 
-from app.database import get_db
+from app.database import get_db, SessionLocal
 from app.models.appointment import Appointment
 from app.dependencies import get_current_user  # Importar desde dependencies
 from app.models.user import User
