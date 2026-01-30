@@ -1,12 +1,16 @@
+import smtplib
 import os
 import re
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
-import requests
 
 # Configuración desde variables de entorno
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")
+SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SENDER_NAME = os.getenv("SENDER_NAME", "Shady's Nails 💅")
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
 
@@ -23,35 +27,30 @@ def validate_email(email: str) -> bool:
     return bool(EMAIL_REGEX.match(email))
 
 def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc: Optional[str] = None, bcc: Optional[str] = None):
-    """Función interna que realiza el envío real usando Resend API"""
+    """Función interna que realiza el envío real usando SMTP"""
     try:
-        url = "https://api.resend.com/emails"
+        msg = MIMEMultipart()
+        msg['From'] = f"{SENDER_NAME} <{SMTP_USER}>"
+        msg['To'] = recipient
+        msg['Subject'] = subject
         
-        payload = {
-            "from": f"{SENDER_NAME} <{SENDER_EMAIL}>",
-            "to": [recipient],
-            "subject": subject,
-            "html": body_html
-        }
+        if cc: msg['Cc'] = cc
+        if bcc: msg['Bcc'] = bcc
+
+        msg.attach(MIMEText(body_html, 'html'))
+
+        # Conectar con STARTTLS (Puerto 587)
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=15)
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
         
-        # Agregar CC y BCC si existen
-        if cc:
-            payload["cc"] = [cc]
-        if bcc:
-            payload["bcc"] = [bcc]
+        recipients = [recipient]
+        if cc: recipients.append(cc)
+        if bcc: recipients.append(bcc)
         
-        headers = {
-            "Authorization": f"Bearer {RESEND_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-        
-        if response.status_code == 200:
-            print(f"✅ Email enviado con éxito a {recipient}")
-        else:
-            print(f"❌ Error Resend ({response.status_code}): {response.text}")
-            
+        server.sendmail(SMTP_USER, recipients, msg.as_string())
+        server.quit()
+        print(f"✅ Email enviado con éxito a {recipient}")
     except Exception as e:
         print(f"❌ Error enviando email: {e}")
 
@@ -63,9 +62,9 @@ def send_email(
     bcc: Optional[str] = None
 ) -> bool:
     """
-    Envía un correo electrónico de forma asíncrona usando Resend.
+    Envía un correo electrónico de forma asíncrona usando SMTP.
     """
-    if not EMAIL_ENABLED or not RESEND_API_KEY or not SENDER_EMAIL:
+    if not EMAIL_ENABLED or not SMTP_USER or not SMTP_PASSWORD:
         print(f"📧 [SIMULACIÓN] Email para: {recipient} | Asunto: {subject}")
         return True
 
