@@ -199,43 +199,49 @@ def create_appointment(
     db.commit()
     db.refresh(new_appointment)
     
-    # 📧 ENVIAR CORREOS DE NOTIFICACIÓN (En segundo plano para no bloquear al cliente)
-    customer_obj = db.query(Customer).filter(Customer.id == data.customer_id).first()
-    service_obj = db.query(Service).filter(Service.id == data.service_id).first()
-    
-    if customer_obj and customer_obj.email and service_obj:
-        # 1. Correo al Cliente (Solicitud Recibida)
-        customer_body = get_request_received_template(
-            customer_name=customer_obj.name,
-            service_name=service_obj.name,
-            date=str(data.date),
-            time=str(data.start_time)
-        )
-        background_tasks.add_task(
-            send_email,
-            subject="⏳ Hemos recibido tu solicitud - Shady's Nails",
-            recipient=customer_obj.email,
-            body_html=customer_body
-        )
+    # 📧 ENVIAR CORREOS DE NOTIFICACIÓN EN SEGUNDO PLANO
+    # Definimos una función interna para procesar todo el envío sin bloquear la respuesta
+    def process_appointment_emails(appointment_id: int):
+        # Necesitamos una nueva sesión de DB para el background task
+        bg_db = SessionLocal()
+        try:
+            appt = bg_db.query(Appointment).filter(Appointment.id == appointment_id).first()
+            if not appt or not appt.customer or not appt.customer.email or not appt.service:
+                return
 
-        # 2. Correo a la Manicurista (Gina)
-        from app.models.worker import Worker
-        worker_obj = db.query(Worker).filter(Worker.id == data.worker_id).first()
-        
-        if worker_obj and worker_obj.email:
-            admin_body = get_new_appointment_request_admin_template(
-                worker_name=worker_obj.name,
-                customer_name=customer_obj.name,
-                service_name=service_obj.name,
-                date=str(data.date),
-                time=str(data.start_time)
+            # 1. Correo al Cliente
+            cust_body = get_request_received_template(
+                customer_name=appt.customer.name,
+                service_name=appt.service.name,
+                date=str(appt.date),
+                time=str(appt.start_time)
             )
-            background_tasks.add_task(
-                send_email,
-                subject="💅 Tienes una nueva solicitud de cita",
-                recipient=worker_obj.email,
-                body_html=admin_body
+            send_email(
+                subject="⏳ Hemos recibido tu solicitud - Shady's Nails",
+                recipient=appt.customer.email,
+                body_html=cust_body
             )
+
+            # 2. Correo a la Manicurista
+            if appt.worker and appt.worker.email:
+                admin_body = get_new_appointment_request_admin_template(
+                    worker_name=appt.worker.name,
+                    customer_name=appt.customer.name,
+                    service_name=appt.service.name,
+                    date=str(appt.date),
+                    time=str(appt.start_time)
+                )
+                send_email(
+                    subject="💅 Tienes una nueva solicitud de cita",
+                    recipient=appt.worker.email,
+                    body_html=admin_body
+                )
+        except Exception as e:
+            print(f"⚠️ Error en background task de emails: {e}")
+        finally:
+            bg_db.close()
+
+    background_tasks.add_task(process_appointment_emails, new_appointment.id)
     
     return new_appointment
 
