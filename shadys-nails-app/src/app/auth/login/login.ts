@@ -50,9 +50,9 @@ export class LoginComponent implements AfterViewInit {
     if (response.credential) {
       this.loading = true;
       this.authService.googleLogin(response.credential).subscribe({
-        next: () => {
+        next: (user) => {
           this.toastService.success('¡Sesión iniciada con Google!');
-          this.redirectUser();
+          this.redirectUser(user);
         },
         error: (err) => {
           console.error('Login con Google falló:', err);
@@ -72,9 +72,9 @@ export class LoginComponent implements AfterViewInit {
     this.error = '';
 
     this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
+      next: (user) => {
         this.toastService.success('¡Bienvenido de nuevo!');
-        this.redirectUser();
+        this.redirectUser(user);
       },
       error: (err) => {
         console.error('❌ Error en login:', err);
@@ -84,16 +84,14 @@ export class LoginComponent implements AfterViewInit {
     });
   }
 
-  private redirectUser(): void {
-    this.authService.currentUser$.subscribe(user => {
-      if (user) {
-        this.loading = false;
-        if (user.role === 'worker') {
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.router.navigate(['/services']);
-        }
+  private redirectUser(user: any): void {
+    if (user) {
+      this.loading = false;
+      if (user.role === 'worker' || user.role === 'admin') {
+        this.router.navigate(['/dashboard']);
+      } else {
+        this.router.navigate(['/services']);
       }
-    });
+    }
   }
 }

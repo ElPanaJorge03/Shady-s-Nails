@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, switchMap, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface LoginRequest {
@@ -38,15 +38,11 @@ export class AuthService {
         }
     }
 
-    login(credentials: LoginRequest): Observable<LoginResponse> {
+    login(credentials: LoginRequest): Observable<User> {
         return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials)
             .pipe(
-                tap(response => {
-                    // Guardar token en localStorage
-                    localStorage.setItem('access_token', response.access_token);
-                    // Cargar datos del usuario
-                    this.loadCurrentUser();
-                })
+                tap(response => localStorage.setItem('access_token', response.access_token)),
+                switchMap(() => this.loadCurrentUser())
             );
     }
 
@@ -66,12 +62,10 @@ export class AuthService {
         return this.http.post(`${this.apiUrl}/reset-password`, data);
     }
 
-    googleLogin(id_token: string): Observable<LoginResponse> {
+    googleLogin(id_token: string): Observable<User> {
         return this.http.post<LoginResponse>(`${this.apiUrl}/google`, { id_token }).pipe(
-            tap(response => {
-                localStorage.setItem('access_token', response.access_token);
-                this.loadCurrentUser().subscribe();
-            })
+            tap(response => localStorage.setItem('access_token', response.access_token)),
+            switchMap(() => this.loadCurrentUser())
         );
     }
 
@@ -102,7 +96,7 @@ export class AuthService {
         return this.currentUserSubject.value;
     }
 
-    private loadCurrentUser(): Observable<User> {
+    public loadCurrentUser(): Observable<User> {
         return this.http.get<User>(`${this.apiUrl}/me`).pipe(
             tap({
                 next: (user) => {
