@@ -19,12 +19,35 @@ def init_production_data():
         gina_email = "ginap.mb.martinez@gmail.com"
         existing_user = db.query(User).filter(User.email == gina_email).first()
         
-        # 1. Asegurar que el usuario existe y es 'worker'
+        # 1. Asegurar que Gina exista como Worker (Administradora)
         gina_email = "ginap.mb.martinez@gmail.com"
-        user = db.query(User).filter(User.email == gina_email).first()
+        worker = db.query(Worker).filter(Worker.email == gina_email).first()
         
+        if not worker:
+            print(f"👷 Creando perfil de Worker para {gina_email}")
+            worker = Worker(
+                name="Gina Martinez",
+                email=gina_email,
+                phone="3000000000",
+                password_hash=get_password_hash("Shadys2024*"),
+                role="worker",
+                state=True
+            )
+            db.add(worker)
+            db.commit()
+            print(f"✅ Gina creada como Worker oficial.")
+        else:
+            print(f"🔄 Sincronizando perfil de Gina...")
+            worker.role = "worker"
+            worker.state = True
+            # Si quieres que la clave de producción sea la misma siempre:
+            # worker.password_hash = get_password_hash("Shadys2024*")
+            db.commit()
+
+        # 2. También asegurar que exista en la tabla de Usuarios (para el login de Google)
+        user = db.query(User).filter(User.email == gina_email).first()
         if not user:
-            print(f"➕ Creando nuevo usuario para {gina_email}")
+            print(f"➕ Creando usuario general para Google Auth...")
             user = User(
                 email=gina_email,
                 name="Gina Martinez",
@@ -33,33 +56,12 @@ def init_production_data():
                 is_active=True
             )
             db.add(user)
-            db.commit()
-            db.refresh(user)
         else:
-            print(f"🔄 Actualizando usuario existente {gina_email} a rol worker")
             user.role = "worker"
             user.is_active = True
-            db.commit()
-
-        # 2. Asegurar que tiene un perfil en la tabla de Workers
-        worker = db.query(Worker).filter(Worker.user_id == user.id).first()
-        if not worker:
-            print(f"👷 Creando perfil de Worker para {user.name}")
-            worker = Worker(
-                user_id=user.id,
-                name=user.name,
-                specialty="Manicura y Pedicura Premium",
-                bio="Especialista en belleza de uñas con años de experiencia.",
-                is_active=True
-            )
-            db.add(worker)
-        else:
-            print(f"✅ Perfil de Worker existente. Asegurando estado activo.")
-            worker.is_active = True
-            worker.name = user.name # Sincronizar nombre
             
         db.commit()
-        print(f"✨ ¡PRODUCCIÓN REPARADA! {gina_email} ahora es Administradora oficial.")
+        print(f"✨ ¡PRODUCCIÓN REPARADA! {gina_email} ahora tiene perfiles vinculados.")
             
     except Exception as e:
         print(f"❌ Error: {e}")
