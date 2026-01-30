@@ -252,6 +252,27 @@ def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
     return {"message": "Contraseña actualizada con éxito. Ya puedes iniciar sesión."}
 
 
+@router.post("/test-email")
+def test_email_config(current_user: User = Depends(get_current_user)):
+    """Endpoint para probar la configuración de email desde el dashboard"""
+    if not current_user.email:
+        raise HTTPException(status_code=400, detail="El usuario no tiene email configurado")
+        
+    success = send_email(
+        subject="🧪 Prueba de Configuración - Shady's Nails",
+        recipient=current_user.email,
+        body_html=f"<h1>¡Hola {current_user.name}!</h1><p>Si estás leyendo esto, tu configuración de correo funciona perfectamente en producción. ✅💅</p>"
+    )
+    
+    if success:
+        return {"message": f"Email de prueba enviado exitosamente a {current_user.email}"}
+    else:
+        raise HTTPException(
+            status_code=500, 
+            detail="Error al enviar el email de prueba. Revisa los logs de Render para ver el error técnico."
+        )
+
+
 @router.post("/google", response_model=Token)
 def google_auth(data: GoogleLoginRequest, db: Session = Depends(get_db)):
     """
