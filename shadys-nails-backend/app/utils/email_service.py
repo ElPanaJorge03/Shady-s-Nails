@@ -78,7 +78,7 @@ def send_email(
         return False
 
     # Enviar al pool de hilos y retornar éxito de encolado inmediatamente
-    executor.submit(_actually_send_email, subject, recipient, body_html, cc, bcc)
+    executor.submit(_actually_send_email_async, subject, recipient, body_html, cc, bcc)
     return True
 
 def get_confirmation_template(customer_name: str, service_name: str, date: str, time: str):
