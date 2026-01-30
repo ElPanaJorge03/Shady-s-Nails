@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from app.database import get_db
 from app.models.service import Service
 from app.models.user import User
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_worker
 
 router = APIRouter(
     prefix="/services",
@@ -97,7 +97,7 @@ def get_service(
 def create_service(
     data: ServiceCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Crea un nuevo servicio.
@@ -105,16 +105,9 @@ def create_service(
     Solo workers pueden crear servicios.
     El servicio se asocia automáticamente al worker autenticado.
     """
-    # Verificar que el usuario sea worker
-    if current_user.role != 'worker':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los workers pueden crear servicios"
-        )
-    
     # Verificar que no exista un servicio con el mismo nombre para este worker
     existing = db.query(Service).filter(
-        Service.worker_id == current_user.id,
+        Service.worker_id == current_worker.id,
         Service.name == data.name
     ).first()
     
@@ -126,7 +119,7 @@ def create_service(
     
     # Crear el servicio
     new_service = Service(
-        worker_id=current_user.id,
+        worker_id=current_worker.id,
         name=data.name,
         duration_minutes=data.duration_minutes,
         price=data.price,
@@ -145,7 +138,7 @@ def update_service(
     service_id: int,
     data: ServiceUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Actualiza un servicio existente.
@@ -162,7 +155,7 @@ def update_service(
         )
     
     # Verificar que el usuario sea el dueño del servicio
-    if service.worker_id != current_user.id:
+    if service.worker_id != current_worker.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para editar este servicio"
@@ -198,7 +191,7 @@ def update_service(
 def delete_service(
     service_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Elimina un servicio.
@@ -216,7 +209,7 @@ def delete_service(
         )
     
     # Verificar que el usuario sea el dueño del servicio
-    if service.worker_id != current_user.id:
+    if service.worker_id != current_worker.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para eliminar este servicio"
@@ -245,7 +238,7 @@ def delete_service(
 def toggle_service(
     service_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Activa o desactiva un servicio.
@@ -262,7 +255,7 @@ def toggle_service(
         )
     
     # Verificar que el usuario sea el dueño del servicio
-    if service.worker_id != current_user.id:
+    if service.worker_id != current_worker.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="No tienes permiso para modificar este servicio"

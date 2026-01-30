@@ -14,7 +14,7 @@ SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SENDER_NAME = os.getenv("SENDER_NAME", "Shady's Nails 💅")
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
 
-# Pool de hilos para enviar correos sin bloquear al usuario
+# Pool de hilos para enviar correos sin bloquear al servidor
 executor = ThreadPoolExecutor(max_workers=3)
 
 # Regex simple para validar emails
@@ -27,10 +27,7 @@ def validate_email(email: str) -> bool:
     return bool(EMAIL_REGEX.match(email))
 
 def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc: Optional[str] = None, bcc: Optional[str] = None):
-    """Función que realiza el trabajo sucio en un hilo separado"""
-    if not EMAIL_ENABLED or not SMTP_USER or not SMTP_PASSWORD:
-        return
-
+    """Función interna que realiza el envío real (ejecutada en hilo separado)"""
     try:
         msg = MIMEMultipart()
         msg['From'] = f"{SENDER_NAME} <{SMTP_USER}>"
@@ -42,7 +39,7 @@ def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc:
 
         msg.attach(MIMEText(body_html, 'html'))
 
-        # Timeout de 10 segundos para no quedar colgado el hilo
+        # Timeout de 10 segundos para la conexión
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASSWORD)
@@ -55,7 +52,7 @@ def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc:
         server.quit()
         print(f"✅ Email enviado a {recipient}")
     except Exception as e:
-        print(f"❌ Error de red enviando email a {recipient}: {e}")
+        print(f"❌ Error enviando email a {recipient}: {e}")
 
 def send_email(
     subject: str, 
@@ -65,8 +62,12 @@ def send_email(
     bcc: Optional[str] = None
 ) -> bool:
     """
-    Envía un correo electrónico. En producción, lo hace de forma asíncrona.
+    Envía un correo electrónico de forma asíncrona (no bloqueante).
     """
+    if not EMAIL_ENABLED or not SMTP_USER or not SMTP_PASSWORD:
+        print(f"📧 [SIMULACIÓN] Email para: {recipient} | Asunto: {subject}")
+        return True
+
     if not validate_email(recipient):
         return False
 

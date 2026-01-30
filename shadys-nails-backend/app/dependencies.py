@@ -29,6 +29,8 @@ from app.utils.security import decode_access_token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
+from app.models.worker import Worker
+
 def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db)
@@ -48,7 +50,6 @@ def get_current_user(
         raise credentials_exception
     
     email: str = payload.get("sub")
-    user_id: int = payload.get("user_id")
     
     if email is None:
         raise credentials_exception
@@ -68,3 +69,24 @@ def get_current_user(
         )
     
     return user
+
+def get_current_worker(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Worker:
+    """
+    Dependency para obtener el perfil de Worker del usuario actual usando su email.
+    """
+    if current_user.role not in ['worker', 'admin']:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Se requiere rol de worker para esta operación."
+        )
+        
+    worker = db.query(Worker).filter(Worker.email == current_user.email).first()
+    if not worker:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="El usuario no tiene un perfil de worker asociado."
+        )
+    return worker

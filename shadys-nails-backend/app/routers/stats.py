@@ -12,7 +12,8 @@ from app.database import get_db
 from app.models.user import User
 from app.models.appointment import Appointment
 from app.models.service import Service
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, get_current_worker
+from app.models.worker import Worker
 
 router = APIRouter(
     prefix="/stats",
@@ -58,23 +59,17 @@ class RevenueStats(BaseModel):
 @router.get("/today", response_model=DailyStats)
 def get_today_stats(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Obtiene las estadísticas del día actual.
     Solo para workers.
     """
-    if current_user.role != 'worker':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los workers pueden ver estadísticas"
-        )
-    
     today = date.today()
     
     # Obtener todas las citas del día para los KPIs diarios
     appointments = db.query(Appointment).filter(
-        Appointment.worker_id == current_user.id,
+        Appointment.worker_id == current_worker.id,
         Appointment.date == today
     ).all()
     
@@ -88,7 +83,7 @@ def get_today_stats(
     # 🆕 Calcular total GLOBAL de pendientes (pendientes + confirmadas futuras)
     # Consideramos 'pending' y 'confirmed' como trabajo futuro pendiente
     global_pending = db.query(func.count(Appointment.id)).filter(
-        Appointment.worker_id == current_user.id,
+        Appointment.worker_id == current_worker.id,
         Appointment.status.in_(['pending', 'confirmed']),
         Appointment.date >= today
     ).scalar() or 0
@@ -128,23 +123,17 @@ def get_today_stats(
 @router.get("/week", response_model=RevenueStats)
 def get_week_stats(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Obtiene las estadísticas de la semana actual.
     """
-    if current_user.role != 'worker':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los workers pueden ver estadísticas"
-        )
-    
     today = date.today()
     week_start = today - timedelta(days=today.weekday())
     week_end = week_start + timedelta(days=6)
     
     appointments = db.query(Appointment).filter(
-        Appointment.worker_id == current_user.id,
+        Appointment.worker_id == current_worker.id,
         Appointment.date >= week_start,
         Appointment.date <= week_end
     ).all()
@@ -181,17 +170,11 @@ def get_week_stats(
 @router.get("/month", response_model=RevenueStats)
 def get_month_stats(
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Obtiene las estadísticas del mes actual.
     """
-    if current_user.role != 'worker':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los workers pueden ver estadísticas"
-        )
-    
     today = date.today()
     month_start = date(today.year, today.month, 1)
     
@@ -202,7 +185,7 @@ def get_month_stats(
         month_end = date(today.year, today.month + 1, 1) - timedelta(days=1)
     
     appointments = db.query(Appointment).filter(
-        Appointment.worker_id == current_user.id,
+        Appointment.worker_id == current_worker.id,
         Appointment.date >= month_start,
         Appointment.date <= month_end
     ).all()
@@ -240,17 +223,11 @@ def get_month_stats(
 def get_popular_services(
     limit: int = 10,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Obtiene los servicios más populares.
     """
-    if current_user.role != 'worker':
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo los workers pueden ver estadísticas"
-        )
-    
     # Agrupar por servicio y contar
     results = db.query(
         Service.id,
@@ -260,7 +237,7 @@ def get_popular_services(
     ).join(
         Appointment, Appointment.service_id == Service.id
     ).filter(
-        Service.worker_id == current_user.id
+        Service.worker_id == current_worker.id
     ).group_by(
         Service.id, Service.name
     ).order_by(

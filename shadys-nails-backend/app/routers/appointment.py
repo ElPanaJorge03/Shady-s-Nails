@@ -6,7 +6,9 @@ from pydantic import BaseModel
 
 from app.database import get_db, SessionLocal
 from app.models.appointment import Appointment
-from app.dependencies import get_current_user  # Importar desde dependencies
+from app.dependencies import get_current_user, get_current_worker
+from app.models.worker import Worker
+  # Importar desde dependencies
 from app.models.user import User
 from app.utils.appointment_validation import (
     validate_appointment_time,
@@ -511,15 +513,12 @@ def confirm_appointment_status(
     appointment_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Confirma una cita (Pasa de 'pending' a 'confirmed').
     Solo accesible por workers.
     """
-    if current_user.role != 'worker':
-        raise HTTPException(status_code=403, detail="Solo workers pueden confirmar citas")
-
     appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appointment:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
@@ -555,15 +554,12 @@ def complete_appointment_status(
     appointment_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_worker: Worker = Depends(get_current_worker)
 ):
     """
     Marca una cita como completada (Pasa de 'confirmed' a 'completed').
     Solo accesible por workers.
     """
-    if current_user.role != 'worker':
-        raise HTTPException(status_code=403, detail="Solo workers pueden completar citas")
-
     appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
     if not appointment:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
