@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
 from datetime import date, time, datetime, timedelta
 from typing import Optional
@@ -112,6 +112,7 @@ class AppointmentUpdate(BaseModel):
 @router.post("", response_model=AppointmentResponse, status_code=201)
 def create_appointment(
     data: AppointmentCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -198,45 +199,43 @@ def create_appointment(
     db.commit()
     db.refresh(new_appointment)
     
-    # 📧 ENVIAR CORREOS DE NOTIFICACIÓN
-    try:
-        # Cargar relaciones para el correo
-        customer_obj = db.query(Customer).filter(Customer.id == data.customer_id).first()
-        service_obj = db.query(Service).filter(Service.id == data.service_id).first()
+    # 📧 ENVIAR CORREOS DE NOTIFICACIÓN (En segundo plano para no bloquear al cliente)
+    customer_obj = db.query(Customer).filter(Customer.id == data.customer_id).first()
+    service_obj = db.query(Service).filter(Service.id == data.service_id).first()
+    
+    if customer_obj and customer_obj.email and service_obj:
+        # 1. Correo al Cliente (Solicitud Recibida)
+        customer_body = get_request_received_template(
+            customer_name=customer_obj.name,
+            service_name=service_obj.name,
+            date=str(data.date),
+            time=str(data.start_time)
+        )
+        background_tasks.add_task(
+            send_email,
+            subject="⏳ Hemos recibido tu solicitud - Shady's Nails",
+            recipient=customer_obj.email,
+            body_html=customer_body
+        )
+
+        # 2. Correo a la Manicurista (Gina)
+        from app.models.worker import Worker
+        worker_obj = db.query(Worker).filter(Worker.id == data.worker_id).first()
         
-        if customer_obj and customer_obj.email and service_obj:
-            # 1. Correo al Cliente (Solicitud Recibida)
-            customer_body = get_request_received_template(
+        if worker_obj and worker_obj.email:
+            admin_body = get_new_appointment_request_admin_template(
+                worker_name=worker_obj.name,
                 customer_name=customer_obj.name,
                 service_name=service_obj.name,
                 date=str(data.date),
                 time=str(data.start_time)
             )
-            send_email(
-                subject="⏳ Hemos recibido tu solicitud - Shady's Nails",
-                recipient=customer_obj.email,
-                body_html=customer_body
+            background_tasks.add_task(
+                send_email,
+                subject="💅 Tienes una nueva solicitud de cita",
+                recipient=worker_obj.email,
+                body_html=admin_body
             )
-
-            # 2. Correo a la Manicurista (Gina)
-            from app.models.worker import Worker
-            worker_obj = db.query(Worker).filter(Worker.id == data.worker_id).first()
-            
-            if worker_obj and worker_obj.email:
-                admin_body = get_new_appointment_request_admin_template(
-                    worker_name=worker_obj.name,
-                    customer_name=customer_obj.name,
-                    service_name=service_obj.name,
-                    date=str(data.date),
-                    time=str(data.start_time)
-                )
-                send_email(
-                    subject="💅 Tienes una nueva solicitud de cita",
-                    recipient=worker_obj.email,
-                    body_html=admin_body
-                )
-    except Exception as email_err:
-        print(f"⚠️ Error al enviar notificaciones de creación: {email_err}")
     
     return new_appointment
 
@@ -504,6 +503,7 @@ def cancel_appointment(
 @router.patch("/{appointment_id}/confirm", response_model=AppointmentResponse)
 def confirm_appointment_status(
     appointment_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -526,22 +526,20 @@ def confirm_appointment_status(
     db.refresh(appointment)
 
     # 📧 Notificar al cliente
-    try:
-        if appointment.customer and appointment.customer.email:
-             # Usamos el mismo template de confirmación
-            body = get_confirmation_template(
-                customer_name=appointment.customer.name,
-                service_name=appointment.service.name if appointment.service else "Servicio",
-                date=str(appointment.date),
-                time=str(appointment.start_time)
-            )
-            send_email(
-                subject="✅ ¡Tu cita ha sido aceptada! - Shady's Nails",
-                recipient=appointment.customer.email,
-                body_html=body
-            )
-    except Exception as e:
-        print(f"Error enviando email confirmación: {e}")
+    if appointment.customer and appointment.customer.email:
+         # Usamos el mismo template de confirmación
+        body = get_confirmation_template(
+            customer_name=appointment.customer.name,
+            service_name=appointment.service.name if appointment.service else "Servicio",
+            date=str(appointment.date),
+            time=str(appointment.start_time)
+        )
+        background_tasks.add_task(
+            send_email,
+            subject="✅ ¡Tu cita ha sido aceptada! - Shady's Nails",
+            recipient=appointment.customer.email,
+            body_html=body
+        )
 
     return appointment
 
@@ -549,6 +547,7 @@ def confirm_appointment_status(
 @router.patch("/{appointment_id}/complete", response_model=AppointmentResponse)
 def complete_appointment_status(
     appointment_id: int,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -568,18 +567,16 @@ def complete_appointment_status(
     db.refresh(appointment)
 
     # 📧 Notificar al cliente que su cita se completó
-    try:
-        if appointment.customer and appointment.customer.email:
-            body = get_completion_template(
-                customer_name=appointment.customer.name,
-                service_name=appointment.service.name if appointment.service else "Servicio"
-            )
-            send_email(
-                subject="✨ ¡Gracias por elegir Shady's Nails!",
-                recipient=appointment.customer.email,
-                body_html=body
-            )
-    except Exception as e:
-        print(f"Error enviando email de completado: {e}")
+    if appointment.customer and appointment.customer.email:
+        body = get_completion_template(
+            customer_name=appointment.customer.name,
+            service_name=appointment.service.name if appointment.service else "Servicio"
+        )
+        background_tasks.add_task(
+            send_email,
+            subject="✨ ¡Gracias por elegir Shady's Nails!",
+            recipient=appointment.customer.email,
+            body_html=body
+        )
 
     return appointment
