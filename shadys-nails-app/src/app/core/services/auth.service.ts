@@ -34,7 +34,9 @@ export class AuthService {
         // Cargar usuario si hay token guardado
         const token = this.getToken();
         if (token) {
-            this.loadCurrentUser();
+            this.loadCurrentUser().subscribe({
+                error: () => this.logout()
+            });
         }
     }
 
@@ -42,7 +44,8 @@ export class AuthService {
         return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials)
             .pipe(
                 tap(response => localStorage.setItem('access_token', response.access_token)),
-                switchMap(() => this.loadCurrentUser())
+                switchMap(() => this.loadCurrentUser()),
+                tap(user => this.currentUserSubject.next(user))
             );
     }
 
