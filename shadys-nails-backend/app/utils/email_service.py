@@ -27,7 +27,7 @@ def validate_email(email: str) -> bool:
     return bool(EMAIL_REGEX.match(email))
 
 def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc: Optional[str] = None, bcc: Optional[str] = None):
-    """Función interna que realiza el envío real (ejecutada en hilo separado)"""
+    """Función interna que realiza el envío real con soporte para SSL"""
     try:
         msg = MIMEMultipart()
         msg['From'] = f"{SENDER_NAME} <{SMTP_USER}>"
@@ -39,9 +39,15 @@ def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc:
 
         msg.attach(MIMEText(body_html, 'html'))
 
-        # Timeout de 10 segundos para la conexión
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10)
-        server.starttls()
+        # Intentar conectar según el puerto
+        if SMTP_PORT == 465:
+            # Puerto 465 usa SSL directo
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=15)
+        else:
+            # Otros puertos (como 587) usan STARTTLS
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=15)
+            server.starttls()
+            
         server.login(SMTP_USER, SMTP_PASSWORD)
         
         recipients = [recipient]
@@ -50,9 +56,9 @@ def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc:
         
         server.sendmail(SMTP_USER, recipients, msg.as_string())
         server.quit()
-        print(f"✅ Email enviado a {recipient}")
+        print(f"✅ Email enviado con éxito a {recipient}")
     except Exception as e:
-        print(f"❌ Error enviando email a {recipient}: {e}")
+        print(f"❌ Error de red SMTP (Puerto {SMTP_PORT}): {e}")
 
 def send_email(
     subject: str, 

@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models.service import Service
 from app.models.user import User
 from app.dependencies import get_current_user, get_current_worker
+from app.models.worker import Worker
 
 router = APIRouter(
     prefix="/services",
