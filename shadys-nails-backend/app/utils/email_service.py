@@ -4,12 +4,20 @@ import requests
 import json
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
+from dotenv import load_dotenv
 
-# Configuración desde variables de entorno
-SMTP_USER = os.getenv("SMTP_USER", "")
-GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL", "")
-SENDER_NAME = os.getenv("SENDER_NAME", "Shady's Nails 💅")
-EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
+# Cargar .env para asegurar que las variables estén disponibles
+load_dotenv()
+
+# Variables se leen en tiempo de ejecución (no al importar), para que cambios en .env sean efectivos sin reiniciar
+def _get_script_url() -> str:
+    return os.getenv("GOOGLE_SCRIPT_URL", "")
+
+def _is_email_enabled() -> bool:
+    return os.getenv("EMAIL_ENABLED", "true").lower() == "true"
+
+SENDER_NAME = "Shady's Nails 💅"
+
 
 # Pool de hilos para enviar correos sin bloquear al servidor
 executor = ThreadPoolExecutor(max_workers=3)
@@ -25,6 +33,13 @@ def validate_email(email: str) -> bool:
 
 def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc: Optional[str] = None, bcc: Optional[str] = None):
     """Función interna que realiza el envío real usando Google Apps Script"""
+    # Leer URL en tiempo de ejecución para siempre tener la más reciente
+    script_url = _get_script_url()
+    print(f"📧 Intentando enviar email a: {recipient} | URL activa: {script_url[:60]}...")
+
+    if not script_url:
+        print("❌ GOOGLE_SCRIPT_URL está vacía. No se puede enviar el email.")
+        return
     try:
         payload = {
             "to": recipient,
@@ -33,20 +48,20 @@ def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc:
             "body": "Por favor, visualice este correo en un cliente que soporte HTML."
         }
         
-        # Google Apps Script requiere follow_redirects=True porque redirige las peticiones
+        # Google Apps Script requiere allow_redirects=True porque redirige las peticiones
         response = requests.post(
-            GOOGLE_SCRIPT_URL, 
+            script_url, 
             json=payload,
             allow_redirects=True,
-            timeout=20
+            timeout=25
         )
         
         if response.status_code == 200:
             print(f"✅ Email enviado con éxito a {recipient} vía Google Script")
         else:
-            print(f"❌ Error enviando email. Status: {response.status_code} | Response: {response.text[:200]}")
+            print(f"❌ Error enviando email. Status: {response.status_code} | Response: {response.text[:300]}")
     except requests.exceptions.Timeout:
-        print(f"❌ Timeout enviando email a {recipient} - Google Script no respondió a tiempo")
+        print(f"❌ Timeout enviando email a {recipient} - Google Script no respondió en 25 segundos")
     except Exception as e:
         print(f"❌ Excepción enviando email: {e}")
 
@@ -60,15 +75,22 @@ def send_email(
     """
     Envía un correo electrónico de forma asíncrona a través de Google Apps Script.
     """
-    if not EMAIL_ENABLED or not GOOGLE_SCRIPT_URL:
-        print(f"📧 [SIMULACIÓN] Email para: {recipient} | Asunto: {subject}")
+    script_url = _get_script_url()
+    email_enabled = _is_email_enabled()
+
+    print(f"📧 send_email() llamado → enabled={email_enabled} | url_ok={bool(script_url)} | recipient={recipient}")
+
+    if not email_enabled or not script_url:
+        print(f"📧 [SIMULACIÓN] Email para: {recipient} | Asunto: {subject} (EMAIL_ENABLED={email_enabled}, URL={script_url[:40] if script_url else 'VACÍA'})")
         return True
 
     if not validate_email(recipient):
+        print(f"❌ Email inválido: {recipient}")
         return False
 
     # Enviar al pool de hilos y retornar éxito de encolado inmediatamente
     executor.submit(_actually_send_email_async, subject, recipient, body_html, cc, bcc)
+    print(f"📬 Email encolado para envío: {recipient}")
     return True
 
 def get_confirmation_template(customer_name: str, service_name: str, date: str, time: str):
