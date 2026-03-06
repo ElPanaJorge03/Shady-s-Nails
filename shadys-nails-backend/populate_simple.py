@@ -3,8 +3,11 @@ Script simplificado para poblar la base de datos de producción
 """
 
 import psycopg2
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://admin:eRiwtbZz95m6LzHyV0Fp2573fBqty6d5@dpg-d52cjie3jp1c73c0qtj0-a.oregon-postgres.render.com/shadys_nails_prod"
+load_dotenv()
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 print("🔌 Conectando...")
 conn = psycopg2.connect(DATABASE_URL)

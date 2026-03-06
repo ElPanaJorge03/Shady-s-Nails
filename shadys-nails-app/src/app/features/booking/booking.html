@@ -1,5 +1,47 @@
 <div class="booking-page">
-    <div class="booking-container">
+    <!-- PANTALLA DE CONFIRMACIÓN POST-RESERVA -->
+    <div class="booking-success-screen" *ngIf="bookingSuccess">
+        <div class="success-card">
+            <div class="success-icon-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h1 class="success-title">¡Reserva Confirmada!</h1>
+            <p class="success-subtitle">Tu cita ha sido enviada. Te notificaremos cuando sea aprobada por Shady's Nails.
+            </p>
+
+            <div class="booking-details-card" *ngIf="confirmedAppointment">
+                <div class="detail-row">
+                    <span class="detail-label">💅 Servicio</span>
+                    <span class="detail-value">{{ selectedService?.name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">📅 Fecha</span>
+                    <span class="detail-value">{{ confirmedAppointment.date }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">🕐 Hora</span>
+                    <span class="detail-value">{{ confirmedAppointment.start_time?.substring(0, 5) }}</span>
+                </div>
+                <div class="detail-row" *ngIf="bookingForm.get('guestName')?.value">
+                    <span class="detail-label">👤 Nombre</span>
+                    <span class="detail-value">{{ bookingForm.get('guestName')?.value }}</span>
+                </div>
+                <div class="detail-row total-row">
+                    <span class="detail-label">💰 Total estimado</span>
+                    <span class="detail-value total">{{ getEstimatedTotal() }}</span>
+                </div>
+            </div>
+
+            <div class="success-actions">
+                <button class="btn-new-booking" (click)="resetBooking()">Agendar otra cita</button>
+                <button class="btn-go-home" (click)="cancel()">Volver al catálogo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="booking-container" *ngIf="!bookingSuccess">
         <!-- Header -->
         <div class="booking-header">
             <button class="btn-back" (click)="cancel()">
@@ -115,10 +157,42 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 5: CONFIRMACIÓN -->
-            <div class="section-card confirm-section" *ngIf="bookingForm.get('time')?.value">
+            <!-- SECCIÓN 5: TUS DATOS (Para Invitados) -->
+            <div class="section-card" *ngIf="!isLoggedIn && bookingForm.get('time')?.value">
                 <div class="section-header">
                     <span class="step-badge">5</span>
+                    <h2>Tus Datos Personales</h2>
+                </div>
+
+                <div class="guest-fields" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label
+                            style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Nombre
+                            Completo</label>
+                        <input type="text" formControlName="guestName" placeholder="Ej. Ana Pérez"
+                            style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 12px; border: 1px solid rgba(209, 156, 164, 0.3); font-family: var(--font-body); font-size: 1rem; color: var(--text-primary);">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label
+                            style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Correo
+                            Electrónico</label>
+                        <input type="email" formControlName="guestEmail" placeholder="ana@ejemplo.com"
+                            style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 12px; border: 1px solid rgba(209, 156, 164, 0.3); font-family: var(--font-body); font-size: 1rem; color: var(--text-primary);">
+                    </div>
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label
+                            style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Teléfono
+                            (Móvil)</label>
+                        <input type="tel" formControlName="guestPhone" placeholder="3001234567"
+                            style="width: 100%; box-sizing: border-box; padding: 1rem; border-radius: 12px; border: 1px solid rgba(209, 156, 164, 0.3); font-family: var(--font-body); font-size: 1rem; color: var(--text-primary);">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN CONFIRMACIÓN -->
+            <div class="section-card confirm-section" *ngIf="bookingForm.get('time')?.value">
+                <div class="section-header">
+                    <span class="step-badge">✨</span>
                     <h2>Confirmación</h2>
                 </div>
 

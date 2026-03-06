@@ -1,16 +1,13 @@
-import smtplib
 import os
 import re
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
+import json
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
 
 # Configuración desde variables de entorno
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+GOOGLE_SCRIPT_URL = os.getenv("GOOGLE_SCRIPT_URL", "")
 SENDER_NAME = os.getenv("SENDER_NAME", "Shady's Nails 💅")
 EMAIL_ENABLED = os.getenv("EMAIL_ENABLED", "true").lower() == "true"
 
@@ -27,32 +24,31 @@ def validate_email(email: str) -> bool:
     return bool(EMAIL_REGEX.match(email))
 
 def _actually_send_email_async(subject: str, recipient: str, body_html: str, cc: Optional[str] = None, bcc: Optional[str] = None):
-    """Función interna que realiza el envío real usando SMTP"""
+    """Función interna que realiza el envío real usando Google Apps Script"""
     try:
-        msg = MIMEMultipart()
-        msg['From'] = f"{SENDER_NAME} <{SMTP_USER}>"
-        msg['To'] = recipient
-        msg['Subject'] = subject
+        payload = {
+            "to": recipient,
+            "subject": subject,
+            "htmlBody": body_html,
+            "body": "Por favor, visualice este correo en un cliente que soporte HTML."
+        }
         
-        if cc: msg['Cc'] = cc
-        if bcc: msg['Bcc'] = bcc
-
-        msg.attach(MIMEText(body_html, 'html'))
-
-        # Conectar con STARTTLS (Puerto 587)
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=15)
-        server.starttls()
-        server.login(SMTP_USER, SMTP_PASSWORD)
+        # Google Apps Script requiere follow_redirects=True porque redirige las peticiones
+        response = requests.post(
+            GOOGLE_SCRIPT_URL, 
+            json=payload,
+            allow_redirects=True,
+            timeout=20
+        )
         
-        recipients = [recipient]
-        if cc: recipients.append(cc)
-        if bcc: recipients.append(bcc)
-        
-        server.sendmail(SMTP_USER, recipients, msg.as_string())
-        server.quit()
-        print(f"✅ Email enviado con éxito a {recipient}")
+        if response.status_code == 200:
+            print(f"✅ Email enviado con éxito a {recipient} vía Google Script")
+        else:
+            print(f"❌ Error enviando email. Status: {response.status_code} | Response: {response.text[:200]}")
+    except requests.exceptions.Timeout:
+        print(f"❌ Timeout enviando email a {recipient} - Google Script no respondió a tiempo")
     except Exception as e:
-        print(f"❌ Error enviando email: {e}")
+        print(f"❌ Excepción enviando email: {e}")
 
 def send_email(
     subject: str, 
@@ -62,9 +58,9 @@ def send_email(
     bcc: Optional[str] = None
 ) -> bool:
     """
-    Envía un correo electrónico de forma asíncrona usando SMTP.
+    Envía un correo electrónico de forma asíncrona a través de Google Apps Script.
     """
-    if not EMAIL_ENABLED or not SMTP_USER or not SMTP_PASSWORD:
+    if not EMAIL_ENABLED or not GOOGLE_SCRIPT_URL:
         print(f"📧 [SIMULACIÓN] Email para: {recipient} | Asunto: {subject}")
         return True
 

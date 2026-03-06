@@ -60,6 +60,10 @@ export class BookingComponent implements OnInit {
   calendarDays: CalendarDay[] = [];
   selectedDate: Date | null = null;
 
+  isLoggedIn = false;
+  bookingSuccess = false;
+  confirmedAppointment: any = null;
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -71,14 +75,24 @@ export class BookingComponent implements OnInit {
     private authService: AuthService,
     private appointmentsService: AppointmentsService
   ) {
-    this.loading = true; // Inicializar en true
+    this.isLoggedIn = !!this.authService.getCurrentUser();
+
     this.bookingForm = this.fb.group({
       serviceId: ['', Validators.required],
       additionalId: [''],
       date: ['', Validators.required],
       time: ['', Validators.required],
-      notes: ['']
+      notes: [''],
+      guestName: [''],
+      guestEmail: [''],
+      guestPhone: ['']
     });
+
+    if (!this.isLoggedIn) {
+      this.bookingForm.get('guestName')?.setValidators([Validators.required]);
+      this.bookingForm.get('guestEmail')?.setValidators([Validators.required, Validators.email]);
+      this.bookingForm.get('guestPhone')?.setValidators([Validators.required, Validators.pattern(/^\d{10}$/)]);
+    }
   }
 
   ngOnInit(): void {
@@ -318,25 +332,19 @@ export class BookingComponent implements OnInit {
     const formValue = this.bookingForm.value;
     const currentUser = this.authService.getCurrentUser();
 
-    if (!currentUser) {
-      this.toastService.error('Debes iniciar sesión para agendar una cita');
-      this.router.navigate(['/login']);
-      return;
-    }
-
     // Si el usuario es customer, usar su customer_id directamente
-    // Si es worker, crear un customer temporal (para testing)
-    const customerId = currentUser.role === 'customer' ? currentUser.id : null;
+    // Si no está logueado o es worker, usar los datos ingresados
+    const customerId = currentUser?.role === 'customer' ? currentUser.id : null;
 
     if (customerId) {
       // Usuario autenticado como customer
       this.createAppointmentForUser(customerId, formValue);
     } else {
-      // Worker o admin - crear customer temporal
+      // Invitado o Worker reservando
       const customerData = {
-        name: currentUser.name,
-        phone: currentUser.phone || '0000000000',
-        email: currentUser.email
+        name: formValue.guestName || currentUser?.name || 'Invitado',
+        phone: formValue.guestPhone || currentUser?.phone || '0000000000',
+        email: formValue.guestEmail || currentUser?.email || 'guest@example.com'
       };
 
       this.http.post<any>(`${environment.apiUrl}/customers`, customerData).subscribe({
@@ -345,7 +353,7 @@ export class BookingComponent implements OnInit {
         },
         error: (err) => {
           console.error('Error creating customer:', err);
-          this.toastService.error('Error al registrar tus datos.');
+          this.toastService.error('Error al registrar tus datos para la cita.');
           this.loading = false;
         }
       });
@@ -366,12 +374,11 @@ export class BookingComponent implements OnInit {
     };
 
     this.appointmentsService.createAppointment(appointmentData).subscribe({
-      next: () => {
-        this.toastService.success('¡Cita Confirmada! Te esperamos.');
+      next: (appointment) => {
+        this.confirmedAppointment = appointment;
+        this.bookingSuccess = true;
         this.loading = false;
-        setTimeout(() => {
-          this.router.navigate(['/services']);
-        }, 2000);
+        this.toastService.success('¡Cita agendada con éxito! Revisa tu correo.');
       },
       error: (err) => {
         console.error('Error creating appointment:', err);
@@ -379,6 +386,17 @@ export class BookingComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  resetBooking(): void {
+    this.bookingSuccess = false;
+    this.confirmedAppointment = null;
+    this.bookingForm.reset();
+    this.selectedService = undefined;
+    this.selectedDate = null;
+    this.availableSlots = [];
+    this.generateCalendar();
+    this.loadServices();
   }
 
   cancel(): void {

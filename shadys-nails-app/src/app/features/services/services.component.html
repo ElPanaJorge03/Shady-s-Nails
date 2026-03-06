@@ -1,68 +1,87 @@
-<!-- Página de Servicios Premium -->
+<!-- Elegant Premium Services Page -->
 <div class="services-page">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="header-content">
-            <h1 class="page-title">💅 Servicios Premium</h1>
-            <p class="page-subtitle">Selecciona el servicio perfecto para ti</p>
-        </div>
-    </div>
+    <div class="elegant-background"></div>
 
-    <!-- Loading State -->
-    <div *ngIf="loading" class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Cargando servicios...</p>
-    </div>
+    <div class="page-container">
+        <!-- Header -->
+        <header class="page-header">
+            <span class="eyebrow">Exclusividad y Detalle</span>
+            <h1 class="page-title">Servicios Premium</h1>
+            <p class="page-subtitle">Descubre una experiencia de cuidado diseñada para resaltar tu belleza y estilo.</p>
+            <div class="decorative-line"></div>
+        </header>
 
-    <!-- Error State -->
-    <div *ngIf="error" class="error-container">
-        <div class="error-icon">⚠️</div>
-        <p class="error-message">{{ error }}</p>
-        <button class="btn-retry" (click)="loadServices()">Reintentar</button>
-    </div>
-
-    <!-- Services Grid -->
-    <div class="services-container" *ngIf="!loading && !error">
-        <div class="services-grid">
-            <div class="service-card" *ngFor="let service of services" (click)="bookService(service)"
-                [class.featured]="service.price > 40000">
-                <!-- Service Icon/Badge -->
-                <div class="service-badge" *ngIf="service.price > 40000">
-                    <span>✨ Premium</span>
-                </div>
-
-                <!-- Service Content -->
-                <div class="service-content">
-                    <h3 class="service-name">{{ service.name }}</h3>
-
-                    <div class="service-details">
-                        <div class="detail-item">
-                            <span class="icon">⏱️</span>
-                            <span class="text">{{ service.duration_minutes }} min</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="icon">💰</span>
-                            <span class="text price">{{ formatPrice(service.price) }}</span>
-                        </div>
-                    </div>
-
-                    <!-- Call to Action -->
-                    <div class="service-cta">
-                        <span class="cta-text">Agendar ahora</span>
-                        <span class="cta-icon">→</span>
-                    </div>
-                </div>
-
-                <!-- Hover Effect Overlay -->
-                <div class="card-overlay"></div>
+        <!-- Loading State -->
+        <div *ngIf="loading" class="loading-container">
+            <div class="loader">
+                <div class="loader-circle"></div>
+                <div class="loader-circle"></div>
             </div>
+            <p>Preparando el catálogo...</p>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="error" class="error-container">
+            <svg class="error-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p class="error-message">{{ error }}</p>
+            <button class="btn-primary" (click)="loadServices()">Intentar nuevamente</button>
+        </div>
+
+        <!-- Services Grid -->
+        <div class="services-grid" *ngIf="!loading && !error && services.length > 0">
+            <article class="service-card" *ngFor="let service of services" (click)="bookService(service)"
+                [class.featured]="service.price > 40000">
+
+                <div class="card-glow" *ngIf="service.price > 40000"></div>
+
+                <div class="card-inner">
+                    <div class="service-badge" *ngIf="service.price > 40000">
+                        <svg class="star-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                        </svg>
+                        <span>Signature</span>
+                    </div>
+
+                    <div class="service-content">
+                        <h3 class="service-name">{{ service.name }}</h3>
+
+                        <div class="service-metrics">
+                            <div class="metric">
+                                <svg class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{{ service.duration_minutes }} min</span>
+                            </div>
+                        </div>
+
+                        <div class="service-footer">
+                            <div class="price">{{ formatPrice(service.price) }}</div>
+                            <button class="btn-book">
+                                Agendar
+                                <svg class="icon-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </article>
         </div>
 
         <!-- Empty State -->
-        <div *ngIf="services.length === 0" class="empty-state">
-            <div class="empty-icon">📋</div>
-            <h3>No hay servicios disponibles</h3>
-            <p>Por favor, vuelve más tarde</p>
+        <div *ngIf="!loading && !error && services.length === 0" class="empty-state">
+            <svg class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3>Nuestro menú se está renovando</h3>
+            <p>Pronto nuevas experiencias estarán disponibles para ti.</p>
         </div>
     </div>
 </div>

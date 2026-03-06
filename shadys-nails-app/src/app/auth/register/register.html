@@ -1,64 +1,121 @@
-<div class="register-container">
-    <div class="register-card">
-        <div class="logo">💅</div>
-        <h1>Shady's Nails</h1>
-        <h2>Crear Cuenta</h2>
+<div class="login-page">
+    <div class="elegant-backdrop"></div>
+    <div class="floating-petals"></div>
 
-        <app-loading-spinner *ngIf="loading" [overlay]="true" message="Creando tu cuenta..."></app-loading-spinner>
-
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-            <div class="form-group">
-                <label>Nombre Completo</label>
-                <input type="text" formControlName="name" placeholder="María García">
-                <span class="error-text" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
-                    Nombre requerido (mínimo 3 caracteres)
-                </span>
+    <div class="login-wrapper">
+        <div class="login-card-feminine">
+            <div class="login-header">
+                <div class="logo-wrapper">
+                    <svg class="flower-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 2C12 2 13 6 17 8C21 10 22 12 22 12C22 12 18 13 16 17C14 21 12 22 12 22C12 22 11 18 7 16C3 14 2 12 2 12C2 12 6 11 8 7C10 3 12 2 12 2V2Z"
+                            fill="url(#paint0_linear)" />
+                        <defs>
+                            <linearGradient id="paint0_linear" x1="2" y1="2" x2="22" y2="22"
+                                gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#EAA6AC" />
+                                <stop offset="1" stop-color="#B76E79" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <h1>Shady's Nails</h1>
+                </div>
+                <p class="subtitle">Únete a nuestra exclusiva familia</p>
             </div>
 
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" formControlName="email" placeholder="maria@example.com">
-                <span class="error-text"
-                    *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-                    Email válido requerido
-                </span>
-            </div>
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="elegant-form">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <div class="input-wrapper">
+                        <input type="text" formControlName="name" placeholder="María García"
+                            [class.error]="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" />
+                    </div>
+                    <span class="error-message"
+                        *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Mínimo 3 caracteres
+                    </span>
+                </div>
 
-            <div class="form-group">
-                <label>Teléfono</label>
-                <input type="tel" formControlName="phone" placeholder="3001234567">
-                <span class="error-text"
-                    *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
-                    Teléfono de 10 dígitos requerido
-                </span>
-            </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <div class="input-wrapper">
+                        <input type="email" formControlName="email" placeholder="maria@example.com"
+                            [class.error]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched" />
+                    </div>
+                    <span class="error-message"
+                        *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Email inválido
+                    </span>
+                </div>
 
-            <div class="form-group">
-                <label>Contraseña</label>
-                <input type="password" formControlName="password" placeholder="••••••••">
-                <span class="error-text"
-                    *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
-                    Contraseña mínimo 6 caracteres
-                </span>
-            </div>
+                <div class="form-group">
+                    <label>Teléfono Módulo</label>
+                    <div class="input-wrapper">
+                        <input type="tel" formControlName="phone" placeholder="300 123 4567"
+                            [class.error]="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched" />
+                    </div>
+                    <span class="error-message"
+                        *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Mínimo 10 dígitos
+                    </span>
+                </div>
 
-            <div class="form-group">
-                <label>Confirmar Contraseña</label>
-                <input type="password" formControlName="confirmPassword" placeholder="••••••••">
-                <span class="error-text"
-                    *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched">
-                    Las contraseñas no coinciden
-                </span>
-            </div>
+                <div class="form-group">
+                    <label>Contraseña Segura</label>
+                    <div class="input-wrapper">
+                        <input type="password" formControlName="password" placeholder="••••••••"
+                            [class.error]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched" />
+                    </div>
+                    <span class="error-message"
+                        *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Seis caracteres mínimo
+                    </span>
+                </div>
 
-            <button type="submit" class="btn-register" [disabled]="registerForm.invalid || loading">
-                <span *ngIf="!loading">Crear Cuenta</span>
-                <span *ngIf="loading">Creando...</span>
-            </button>
+                <div class="form-group">
+                    <label>Confirmar Contraseña</label>
+                    <div class="input-wrapper">
+                        <input type="password" formControlName="confirmPassword" placeholder="••••••••"
+                            [class.error]="registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched" />
+                    </div>
+                    <span class="error-message"
+                        *ngIf="registerForm.errors?.['mismatch'] && registerForm.get('confirmPassword')?.touched">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Las contraseñas no coinciden
+                    </span>
+                </div>
 
-            <div class="login-link">
-                ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+                <app-loading-spinner *ngIf="loading" [overlay]="true" message="Creando perfil..."></app-loading-spinner>
+
+                <button type="submit" [disabled]="registerForm.invalid || loading" class="btn-primary"
+                    style="margin-top: 2rem;">
+                    <span *ngIf="!loading">Crear mi cuenta</span>
+                    <span *ngIf="loading" class="btn-loader"></span>
+                </button>
+            </form>
+
+            <div class="register-link">
+                ¿Ya eres parte de nuestra familia? <a routerLink="/login">Inicia Sesión</a>
             </div>
-        </form>
+        </div>
     </div>
 </div>

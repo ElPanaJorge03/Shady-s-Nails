@@ -549,3 +549,162 @@
         }
     }
 }
+
+// ═══════════════════════════════════════════════════
+// PANTALLA DE ÉXITO POST-RESERVA
+// ═══════════════════════════════════════════════════
+
+.booking-success-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+
+    .success-card {
+        background: white;
+        border-radius: 24px;
+        padding: 3rem 2.5rem;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(183, 110, 121, 0.15);
+        border: 1px solid rgba(183, 110, 121, 0.15);
+        animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .success-icon-wrap {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #D19CA4 0%, #B76E79 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.75rem;
+        box-shadow: 0 8px 24px rgba(183, 110, 121, 0.35);
+
+        svg {
+            width: 40px;
+            height: 40px;
+            color: white;
+        }
+    }
+
+    .success-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: #3A3238;
+        margin: 0 0 0.75rem 0;
+    }
+
+    .success-subtitle {
+        color: #8E7D86;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin: 0 0 2rem 0;
+    }
+
+    .booking-details-card {
+        background: #FEFAF6;
+        border: 1px solid rgba(183, 110, 121, 0.18);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: left;
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid rgba(183, 110, 121, 0.1);
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &.total-row {
+                padding-top: 1rem;
+                margin-top: 0.25rem;
+            }
+
+            .detail-label {
+                font-size: 0.9rem;
+                color: #8E7D86;
+                font-weight: 500;
+            }
+
+            .detail-value {
+                font-size: 0.95rem;
+                color: #3A3238;
+                font-weight: 600;
+                text-align: right;
+                max-width: 60%;
+
+                &.total {
+                    font-size: 1.2rem;
+                    color: #B76E79;
+                    font-weight: 700;
+                }
+            }
+        }
+    }
+
+    .success-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn-new-booking {
+        padding: 0.9rem;
+        background: linear-gradient(135deg, #D19CA4 0%, #B76E79 100%);
+        color: white;
+        border: none;
+        border-radius: 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 16px rgba(183, 110, 121, 0.3);
+        font-family: 'Inter', sans-serif;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(183, 110, 121, 0.4);
+        }
+    }
+
+    .btn-go-home {
+        padding: 0.9rem;
+        background: transparent;
+        color: #8E7D86;
+        border: 1px solid rgba(183, 110, 121, 0.25);
+        border-radius: 2rem;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-family: 'Inter', sans-serif;
+
+        &:hover {
+            background: rgba(183, 110, 121, 0.06);
+            color: #B76E79;
+            border-color: rgba(183, 110, 121, 0.4);
+        }
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}

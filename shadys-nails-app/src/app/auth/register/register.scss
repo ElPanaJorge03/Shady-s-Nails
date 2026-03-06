@@ -1,128 +1,281 @@
-.register-container {
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+:host {
+    --fem-bg-pearl: #FFFBF9;
+    --fem-primary: #D19CA4;
+    --fem-primary-dark: #B76E79;
+    --fem-accent-gold: #C89B7B;
+    --fem-text-dark: #3A3238;
+    --fem-text-light: #8E7D86;
+    --fem-surface: #FFFFFF;
+
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Outfit', sans-serif;
+
+    --shadow-soft: 0 20px 40px rgba(209, 156, 164, 0.1);
+}
+
+.login-page {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 2rem;
+    background-color: var(--fem-bg-pearl);
+    position: relative;
+    overflow: hidden;
+    font-family: var(--font-body);
 }
 
-.register-card {
-    background: white;
-    border-radius: 20px;
-    padding: 3rem;
-    max-width: 450px;
+.elegant-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(209, 156, 164, 0.15), transparent 40%),
+        radial-gradient(circle at bottom left, rgba(200, 155, 123, 0.15), transparent 40%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Decoración abstracta sutil */
+.floating-petals {
+    position: absolute;
+    inset: 0;
+    opacity: 0.6;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M54.627 0l.83.83c-11.75 11.75-30.8 11.75-42.55 0L12.077 0h42.55zm-42.55 60l-.83-.83c11.75-11.75 30.8-11.75 42.55 0l.83.83h-42.55zM0 54.627l.83.83c11.75-11.75 11.75-30.8 0-42.55L0 12.077v42.55zm60-42.55l-.83-.83c-11.75 11.75-11.75 30.8 0 42.55l.83.83v-42.55z' fill='%23D19CA4' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 2;
+}
+
+.login-wrapper {
+    position: relative;
+    z-index: 10;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 440px;
+    padding: 2rem;
+    animation: slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-    .logo {
-        font-size: 3rem;
-        text-align: center;
+.login-card-feminine {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 24px;
+    padding: 3.5rem 2.5rem;
+    box-shadow: var(--shadow-soft);
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+
+    .logo-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
         margin-bottom: 1rem;
-    }
 
-    h1 {
-        text-align: center;
-        color: #667eea;
-        margin-bottom: 0.5rem;
-        font-size: 2rem;
-    }
+        .flower-icon {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 0.5rem;
+            animation: delicatePulse 4s infinite alternate;
+        }
 
-    h2 {
-        text-align: center;
-        color: #666;
-        margin-bottom: 2rem;
-        font-size: 1.2rem;
-        font-weight: 400;
-    }
-}
-
-.success-message {
-    background: #d4edda;
-    color: #155724;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
-.error-message {
-    background: #f8d7da;
-    color: #721c24;
-    padding: 1rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-
-    label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #333;
-        font-weight: 600;
-    }
-
-    input {
-        width: 100%;
-        padding: 0.875rem;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s;
-
-        &:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 2.4rem;
+            font-weight: 500;
+            color: var(--fem-text-dark);
+            margin: 0;
+            letter-spacing: -0.02em;
         }
     }
 
-    .error-text {
-        display: block;
-        color: #e74c3c;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+    .subtitle {
+        color: var(--fem-text-dark);
+        font-weight: 300;
+        margin: 0;
+        font-size: 1.05rem;
     }
 }
 
-.btn-register {
+.elegant-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--fem-text-dark);
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(209, 156, 164, 0.3);
+            border-radius: 12px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--fem-text-dark);
+            transition: all 0.3s ease;
+
+            &::placeholder {
+                color: rgba(58, 50, 56, 0.5);
+            }
+
+            &:focus {
+                outline: none;
+                border-color: var(--fem-primary);
+                background: #FFFFFF;
+                box-shadow: 0 0 0 4px rgba(209, 156, 164, 0.1);
+            }
+
+            &.error {
+                border-color: #E63946;
+                background: rgba(230, 57, 70, 0.02);
+            }
+        }
+
+        .error-message {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #E63946;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+            animation: fadeIn 0.3s ease;
+
+            svg {
+                width: 14px;
+                height: 14px;
+            }
+        }
+    }
+}
+
+.btn-primary {
     width: 100%;
-    padding: 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin-top: 1rem;
+    padding: 1.1rem;
+    background: linear-gradient(135deg, var(--fem-primary) 0%, var(--fem-primary-dark) 100%);
     color: white;
     border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(183, 110, 121, 0.2);
 
     &:hover:not(:disabled) {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 15px 25px rgba(183, 110, 121, 0.3);
     }
 
     &:disabled {
-        opacity: 0.6;
+        opacity: 0.7;
         cursor: not-allowed;
+        transform: none;
     }
 }
 
-.login-link {
+.btn-loader {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+.register-link {
     text-align: center;
-    margin-top: 1.5rem;
-    color: #666;
+    margin-top: 2.5rem;
+    color: var(--fem-text-dark);
+    font-size: 0.95rem;
 
     a {
-        color: #667eea;
+        color: var(--fem-primary-dark);
+        font-weight: 500;
         text-decoration: none;
-        font-weight: 600;
+        transition: color 0.3s;
 
         &:hover {
-            text-decoration: underline;
+            color: var(--fem-text-dark);
         }
+    }
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes delicatePulse {
+    from {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    to {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 480px) {
+    .login-wrapper {
+        padding: 1rem;
+    }
+
+    .login-card-feminine {
+        padding: 2.5rem 1.5rem;
+    }
+
+    .login-header h1 {
+        font-size: 2rem;
     }
 }

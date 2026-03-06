@@ -39,8 +39,8 @@ export class App implements OnInit {
   }
 
   showHeader(): boolean {
-    // No mostrar header en login
-    return this.currentRoute !== '/login' && this.currentRoute !== '/';
+    const hiddenRoutes = ['/', '/login', '/register', '/forgot-password'];
+    return !hiddenRoutes.includes(this.currentRoute);
   }
 
   logout(): void {

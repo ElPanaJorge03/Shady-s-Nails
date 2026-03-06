@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from app.database import get_db, SessionLocal
 from app.models.appointment import Appointment
-from app.dependencies import get_current_user, get_current_worker
+from app.dependencies import get_current_user, get_current_worker, get_optional_user
 from app.models.worker import Worker
   # Importar desde dependencies
 from app.models.user import User
@@ -116,7 +116,7 @@ def create_appointment(
     data: AppointmentCreate,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_optional_user)
 ):
     """
     Crea una nueva cita con validaciones automáticas:

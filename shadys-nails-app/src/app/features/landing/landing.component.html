@@ -1,0 +1,92 @@
+<div class="landing-page">
+    <!-- Navbar -->
+    <nav class="landing-nav">
+        <div class="nav-container">
+            <div class="logo">
+                <svg class="flower-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C12 2 13 6 17 8C21 10 22 12 22 12C22 12 18 13 16 17C14 21 12 22 12 22C12 22 11 18 7 16C3 14 2 12 2 12C2 12 6 11 8 7C10 3 12 2 12 2V2Z"
+                        fill="#D19CA4" />
+                </svg>
+                <span>Shady's Nails</span>
+            </div>
+            <div class="nav-links">
+                <a href="#services">Servicios</a>
+                <a href="#about">Nosotros</a>
+                <a routerLink="/login" class="nav-btn-outline">Iniciar Sesión</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="hero-content">
+            <span class="eyebrow">Exclusivo Santuario de Belleza</span>
+            <h1>Eleva la Belleza de<br>Tus Manos</h1>
+            <p>Descubre el arte del cuidado personal. Diseños exclusivos, acrílicas premium y tratamientos que resaltan
+                tu esencia femenina y elegante.</p>
+
+            <div class="hero-buttons">
+                <button routerLink="/register" class="btn-primary">Agenda tu Cita</button>
+                <button routerLink="/login" class="btn-secondary">Ya soy cliente</button>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="blob-shape"></div>
+            <div class="image-wrapper">
+                <img src="https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    alt="Manicura Premium" />
+            </div>
+            <div class="floating-badge badge-1">
+                <span class="icon">✨</span>
+                <span class="text">Diseños Únicos</span>
+            </div>
+            <div class="floating-badge badge-2">
+                <span class="icon">🌺</span>
+                <span class="text">Ambiente Relajante</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="services" class="features-section">
+        <div class="section-header">
+            <h2>Servicios Esenciales</h2>
+            <p>Materiales de la más alta calidad y un trato personalizado</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">💅</div>
+                <h3>Acrílicas Premium</h3>
+                <p>Técnicas modernas para extensiones duraderas, esculpidas y con acabados perfectos que reflejan lujo.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">✨</div>
+                <h3>Nail Art Exclusivo</h3>
+                <p>Desde delicados trazos a mano alzada hasta incrustaciones. Tu imaginación es el único límite.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🫧</div>
+                <h3>Spa de Manos</h3>
+                <p>Exfoliación, hidratación profunda y masajes relajantes para rejuvenecer tu piel.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Footer -->
+    <footer class="landing-footer">
+        <div class="footer-cta">
+            <h2>¿Lista para un momento de relajación?</h2>
+            <p>Regístrate ahora y reserva tu primera cita con nosotras.</p>
+            <button routerLink="/register" class="btn-glow">Crear Cuenta</button>
+        </div>
+        <div class="footer-base">
+            <p>&copy; {{ currentYear }} Shady's Nails. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</div>

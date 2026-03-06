@@ -25,8 +25,11 @@ from app.database import get_db
 from app.models.user import User
 from app.utils.security import decode_access_token
 
-# OAuth2 scheme para extraer el token del header
+# OAuth2 scheme para extraer el token del header (OBLIGATORIO - error si no hay token)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+# OAuth2 scheme OPCIONAL - no lanza error si no hay token (para invitados)
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 
 from app.models.worker import Worker
@@ -90,3 +93,30 @@ def get_current_worker(
             detail="El usuario no tiene un perfil de worker asociado."
         )
     return worker
+
+
+def get_optional_user(
+    token: Optional[str] = Depends(oauth2_scheme_optional),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Dependency OPCIONAL: retorna el usuario si hay token válido, None si es invitado.
+    No lanza 401 si no hay token.
+    """
+    if not token:
+        return None
+    try:
+        payload = decode_access_token(token)
+        if payload is None:
+            return None
+        email: str = payload.get("sub")
+        if not email:
+            return None
+        statement = select(User).where(User.email == email)
+        result = db.execute(statement)
+        user = result.scalar_one_or_none()
+        if user and user.is_active:
+            return user
+        return None
+    except Exception:
+        return None

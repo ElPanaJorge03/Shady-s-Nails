@@ -8,6 +8,11 @@ import { workerGuard } from './core/guards/worker.guard';
 
 export const routes: Routes = [
     {
+        path: '',
+        loadComponent: () => import('./features/landing/landing.component').then(m => m.LandingComponent),
+        pathMatch: 'full'
+    },
+    {
         path: 'login',
         component: LoginComponent
     },
@@ -21,13 +26,11 @@ export const routes: Routes = [
     },
     {
         path: 'services',
-        component: ServicesComponent,
-        canActivate: [authGuard]
+        component: ServicesComponent
     },
     {
         path: 'booking',
-        component: BookingComponent,
-        canActivate: [authGuard]
+        component: BookingComponent
     },
     {
         path: 'my-appointments',
@@ -45,8 +48,8 @@ export const routes: Routes = [
         canActivate: [authGuard]
     },
     {
-        path: '',
-        redirectTo: 'login',
+        path: '**',
+        redirectTo: '',
         pathMatch: 'full'
     }
 ];
