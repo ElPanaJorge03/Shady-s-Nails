@@ -402,7 +402,22 @@ export class BookingComponent implements OnInit {
   resetBooking(): void {
     this.bookingSuccess = false;
     this.confirmedAppointment = null;
+    // Re-evaluar si el usuario sigue logueado antes de resetear
+    this.isLoggedIn = !!this.authService.getCurrentUser();
     this.bookingForm.reset();
+    // Reaplicar validadores según estado de login
+    if (!this.isLoggedIn) {
+      this.bookingForm.get('guestName')?.setValidators([Validators.required]);
+      this.bookingForm.get('guestEmail')?.setValidators([Validators.required, Validators.email]);
+      this.bookingForm.get('guestPhone')?.setValidators([Validators.required, Validators.pattern(/^\d{10}$/)]);
+    } else {
+      this.bookingForm.get('guestName')?.clearValidators();
+      this.bookingForm.get('guestEmail')?.clearValidators();
+      this.bookingForm.get('guestPhone')?.clearValidators();
+    }
+    this.bookingForm.get('guestName')?.updateValueAndValidity();
+    this.bookingForm.get('guestEmail')?.updateValueAndValidity();
+    this.bookingForm.get('guestPhone')?.updateValueAndValidity();
     this.selectedService = undefined;
     this.selectedDate = null;
     this.availableSlots = [];
