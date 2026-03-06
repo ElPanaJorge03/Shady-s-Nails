@@ -70,13 +70,19 @@ export class MyAppointmentsComponent implements OnInit {
       return;
     }
 
-    if (!confirm(`¿Estás seguro de cancelar la cita del ${this.formatDate(appointment.date)} a las ${appointment.start_time}?`)) {
+    if (!confirm(`¿Estás seguro de cancelar la cita del ${this.formatDate(appointment.date)}?`)) {
       return;
     }
 
     this.appointmentsService.cancelAppointment(appointment.id).subscribe({
       next: () => {
+        // Actualizar estado en memoria y mover a historial sin refrescar
+        appointment.status = 'cancelled';
         this.upcomingAppointments = this.upcomingAppointments.filter(apt => apt.id !== appointment.id);
+        if (!this.historyAppointments.find(a => a.id === appointment.id)) {
+          this.historyAppointments = [appointment, ...this.historyAppointments];
+        }
+        this.cdr.detectChanges();
         this.toastService.success('Cita cancelada correctamente');
       },
       error: (err) => {

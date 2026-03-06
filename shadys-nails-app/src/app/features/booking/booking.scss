@@ -4,26 +4,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :host {
-    --primary: #8b5cf6;
-    --primary-dark: #7c3aed;
-    --primary-light: #a78bfa;
-    --primary-bg: #ede9fe;
-    --secondary: #ec4899;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --bg-page: #f9fafb;
+    --primary: #B76E79;
+    --primary-dark: #9a5560;
+    --primary-light: #EAA6AC;
+    --primary-bg: #F9EEF0;
+    --secondary: #EAA6AC;
+    --text-primary: #2C1A1D;
+    --text-secondary: #7a5a60;
+    --bg-page: #FDF6F7;
     --white: #ffffff;
-    --border: #e5e7eb;
+    --border: rgba(183, 110, 121, 0.18);
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 2px rgba(183, 110, 121, 0.06);
+    --shadow-md: 0 4px 12px rgba(183, 110, 121, 0.12);
+    --shadow-lg: 0 10px 28px rgba(183, 110, 121, 0.16);
 }
 
 .booking-page {
     min-height: 100vh;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e2e8f0 100%);
+    background: linear-gradient(160deg, #FDF6F7 0%, #F9EEF0 50%, #FDF6F7 100%);
     padding: 2rem 1rem;
     font-family: 'Inter', sans-serif;
 }

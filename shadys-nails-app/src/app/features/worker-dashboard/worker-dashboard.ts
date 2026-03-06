@@ -353,10 +353,12 @@ export class WorkerDashboardComponent implements OnInit {
 
     this.appointmentsService.cancelAppointment(appointment.id).subscribe({
       next: () => {
+        // Actualizar en memoria sin refrescar página
         appointment.status = 'cancelled';
+        this.filterAppointments();
+        this.cdr.detectChanges();
         this.toastService.success('Cita cancelada');
         this.loadDailyStats();
-        this.filterAppointments();
       },
       error: (err) => {
         console.error('Error cancelling appointment:', err);
