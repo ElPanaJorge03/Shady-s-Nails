@@ -202,44 +202,75 @@ def create_appointment(
     db.refresh(new_appointment)
     
     # 📧 ENVIAR CORREOS DE NOTIFICACIÓN EN SEGUNDO PLANO
-    # Definimos una función interna para procesar todo el envío sin bloquear la respuesta
     def process_appointment_emails(appointment_id: int):
-        # Necesitamos una nueva sesión de DB para el background task
+        from app.models.customer import Customer as CustomerModel
+        from app.models.service import Service as ServiceModel
+        from app.models.worker import Worker as WorkerModel
+
         bg_db = SessionLocal()
         try:
+            print(f"📧 [EMAIL TASK] Procesando emails para cita ID={appointment_id}")
+
             appt = bg_db.query(Appointment).filter(Appointment.id == appointment_id).first()
-            if not appt or not appt.customer or not appt.customer.email or not appt.service:
+            if not appt:
+                print(f"❌ [EMAIL TASK] Cita ID={appointment_id} no encontrada en DB")
+                return
+
+            # Consultas explícitas para evitar lazy-load en hilos
+            customer = bg_db.query(CustomerModel).filter(CustomerModel.id == appt.customer_id).first()
+            service  = bg_db.query(ServiceModel).filter(ServiceModel.id == appt.service_id).first()
+            worker   = bg_db.query(WorkerModel).filter(WorkerModel.id == appt.worker_id).first()
+
+            print(f"📧 [EMAIL TASK] customer={customer and customer.email} | service={service and service.name} | worker={worker and worker.email}")
+
+            if not customer:
+                print(f"❌ [EMAIL TASK] No se encontró el customer ID={appt.customer_id}")
+                return
+            if not customer.email:
+                print(f"❌ [EMAIL TASK] El customer ID={customer.id} no tiene email registrado")
+                return
+            if not service:
+                print(f"❌ [EMAIL TASK] No se encontró el servicio ID={appt.service_id}")
                 return
 
             # 1. Correo al Cliente
+            print(f"📤 [EMAIL TASK] Enviando correo al cliente: {customer.email}")
             cust_body = get_request_received_template(
-                customer_name=appt.customer.name,
-                service_name=appt.service.name,
+                customer_name=customer.name,
+                service_name=service.name,
                 date=str(appt.date),
                 time=str(appt.start_time)
             )
             send_email(
                 subject="⏳ Hemos recibido tu solicitud - Shady's Nails",
-                recipient=appt.customer.email,
+                recipient=customer.email,
                 body_html=cust_body
             )
 
             # 2. Correo a la Manicurista
-            if appt.worker and appt.worker.email:
+            if worker and worker.email:
+                print(f"📤 [EMAIL TASK] Enviando correo a la manicurista: {worker.email}")
                 admin_body = get_new_appointment_request_admin_template(
-                    worker_name=appt.worker.name,
-                    customer_name=appt.customer.name,
-                    service_name=appt.service.name,
+                    worker_name=worker.name,
+                    customer_name=customer.name,
+                    service_name=service.name,
                     date=str(appt.date),
                     time=str(appt.start_time)
                 )
                 send_email(
                     subject="💅 Tienes una nueva solicitud de cita",
-                    recipient=appt.worker.email,
+                    recipient=worker.email,
                     body_html=admin_body
                 )
+            else:
+                print(f"⚠️ [EMAIL TASK] Worker no tiene email, se omite notificación a manicurista")
+
+            print(f"✅ [EMAIL TASK] Emails encolados correctamente para cita ID={appointment_id}")
+
         except Exception as e:
-            print(f"⚠️ Error en background task de emails: {e}")
+            import traceback
+            print(f"❌ [EMAIL TASK] Error inesperado: {e}")
+            print(traceback.format_exc())
         finally:
             bg_db.close()
 
