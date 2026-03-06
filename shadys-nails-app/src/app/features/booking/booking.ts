@@ -332,19 +332,30 @@ export class BookingComponent implements OnInit {
     const formValue = this.bookingForm.value;
     const currentUser = this.authService.getCurrentUser();
 
-    // Si el usuario es customer, usar su customer_id directamente
-    // Si no está logueado o es worker, usar los datos ingresados
-    const customerId = currentUser?.role === 'customer' ? currentUser.id : null;
-
-    if (customerId) {
-      // Usuario autenticado como customer
-      this.createAppointmentForUser(customerId, formValue);
-    } else {
-      // Invitado o Worker reservando
+    if (currentUser && currentUser.role !== 'worker') {
+      // Usuario autenticado (Google OAuth u otro) — crear/usar customer con sus datos reales
       const customerData = {
-        name: formValue.guestName || currentUser?.name || 'Invitado',
-        phone: formValue.guestPhone || currentUser?.phone || '0000000000',
-        email: formValue.guestEmail || currentUser?.email || 'guest@example.com'
+        name: currentUser.name || 'Cliente',
+        phone: currentUser.phone || '0000000000',
+        email: currentUser.email || ''
+      };
+
+      this.http.post<any>(`${environment.apiUrl}/customers`, customerData).subscribe({
+        next: (customer) => {
+          this.createAppointmentForUser(customer.id, formValue);
+        },
+        error: (err) => {
+          console.error('Error creating customer:', err);
+          this.toastService.error('Error al registrar tus datos para la cita.');
+          this.loading = false;
+        }
+      });
+    } else if (!currentUser) {
+      // Invitado sin cuenta — usa los datos del formulario
+      const customerData = {
+        name: formValue.guestName || 'Invitado',
+        phone: formValue.guestPhone || '0000000000',
+        email: formValue.guestEmail || ''
       };
 
       this.http.post<any>(`${environment.apiUrl}/customers`, customerData).subscribe({

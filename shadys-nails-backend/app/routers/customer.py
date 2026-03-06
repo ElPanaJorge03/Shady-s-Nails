@@ -53,19 +53,28 @@ def create_or_get_customer(
     db: Session = Depends(get_db)
 ):
     """
-    Crea un nuevo customer o retorna uno existente si ya existe con el mismo teléfono.
+    Crea un nuevo customer o retorna uno existente si ya existe con el mismo email o teléfono.
     Esto evita duplicados al agendar citas.
     """
-    # Buscar si ya existe un customer con ese teléfono
-    existing = db.query(Customer).filter(Customer.phone == customer.phone).first()
+    # 1. Buscar por email primero (más confiable, especialmente para usuarios Google OAuth)
+    existing = None
+    if customer.email:
+        existing = db.query(Customer).filter(Customer.email == customer.email).first()
+    
+    # 2. Si no hay match por email, buscar por teléfono (solo si no es el default '0000000000')
+    if not existing and customer.phone and customer.phone != '0000000000':
+        existing = db.query(Customer).filter(Customer.phone == customer.phone).first()
     
     if existing:
-        # Actualizar datos si es necesario
+        # Actualizar datos si llegaron nuevos
         existing.name = customer.name
         if customer.email:
             existing.email = customer.email
+        if customer.phone and customer.phone != '0000000000':
+            existing.phone = customer.phone
         db.commit()
         db.refresh(existing)
+        print(f"✅ Customer existente encontrado ID={existing.id}, email={existing.email}")
         return existing
     
     # Crear nuevo customer
@@ -77,5 +86,6 @@ def create_or_get_customer(
     db.add(new_customer)
     db.commit()
     db.refresh(new_customer)
+    print(f"✅ Nuevo customer creado ID={new_customer.id}, email={new_customer.email}")
     return new_customer
 
