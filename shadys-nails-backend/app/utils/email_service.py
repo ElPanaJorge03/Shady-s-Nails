@@ -1,29 +1,28 @@
 import os
 import re
 import requests
-import json
 from typing import Optional
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
-
-# Cargar .env para asegurar que las variables estén disponibles
-load_dotenv()
-
-# Variables se leen en tiempo de ejecución (no al importar), para que cambios en .env sean efectivos sin reiniciar
-def _get_script_url() -> str:
-    return os.getenv("GOOGLE_SCRIPT_URL", "")
-
-def _is_email_enabled() -> bool:
-    return os.getenv("EMAIL_ENABLED", "true").lower() == "true"
-
-SENDER_NAME = "Shady's Nails 💅"
-
 
 # Pool de hilos para enviar correos sin bloquear al servidor
 executor = ThreadPoolExecutor(max_workers=3)
 
 # Regex simple para validar emails
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+
+SENDER_NAME = "Shady's Nails 💅"
+
+def _get_script_url() -> str:
+    # override=True garantiza que siempre leemos el .env más reciente,
+    # incluso si el servidor lleva horas corriendo sin reiniciar
+    load_dotenv(override=True)
+    return os.getenv("GOOGLE_SCRIPT_URL", "")
+
+def _is_email_enabled() -> bool:
+    return os.getenv("EMAIL_ENABLED", "true").lower() == "true"
+
+
 
 def validate_email(email: str) -> bool:
     """Valida formato de email usando regex simple"""
