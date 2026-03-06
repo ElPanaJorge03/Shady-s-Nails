@@ -14,16 +14,11 @@ from app.database import get_db
 from app.models.user import User
 from app.schemas.auth import (
     Token, UserResponse, LoginRequest, RegisterRequest, 
-    UserUpdate, ForgotPasswordRequest, ResetPasswordRequest,
-    GoogleLoginRequest
+    UserUpdate, ForgotPasswordRequest, ResetPasswordRequest
 )
 from app.utils.security import verify_password, create_access_token, create_refresh_token, get_password_hash, decode_refresh_token
 from app.dependencies import get_current_user
 from app.utils.email_service import send_email, get_reset_password_template
-
-# Google Auth
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
 import os
 
 router = APIRouter(
@@ -272,76 +267,5 @@ def test_email_config(current_user: User = Depends(get_current_user)):
             detail="Error al enviar el email de prueba. Revisa los logs de Render para ver el error técnico."
         )
 
-
-@router.post("/google", response_model=Token)
-def google_auth(data: GoogleLoginRequest, db: Session = Depends(get_db)):
-    """
-    Autenticación con Google
-    1. Verifica el token con Google
-    2. Crea el usuario si no existe
-    3. Retorna tokens de acceso
-    """
-    client_id = os.getenv("GOOGLE_CLIENT_ID")
-    if not client_id:
-        print("⚠️ GOOGLE_CLIENT_ID no configurado en .env")
-        # Para desarrollo, puedes ponerlo aquí si quieres, sino fallará.
-        # client_id = "TU_CLIENT_ID_REAL"
-    
-    try:
-        # 1. Verificar el token de Google
-        idinfo = id_token.verify_oauth2_token(
-            data.id_token, 
-            google_requests.Request(), 
-            client_id
-        )
-
-        # ID de usuario en Google (sub) y email
-        email = idinfo['email']
-        name = idinfo.get('name', email.split('@')[0])
-        
-        # 2. Buscar si el usuario ya existe
-        user = db.query(User).filter(User.email == email).first()
-        
-        if not user:
-            # 3. Si no existe, crearlo (Registro Automático)
-            # Usamos una contraseña aleatoria compleja ya que entrará por Google
-            random_pass = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
-            user = User(
-                email=email,
-                name=name,
-                password_hash=get_password_hash(random_pass),
-                role='customer', # Por defecto son clientes
-                is_active=True
-            )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-            print(f"🆕 Nuevo usuario creado vía Google: {email}")
-
-        # 4. Generar tokens de Shady's Nails
-        token_data = {
-            "sub": user.email,
-            "user_id": user.id,
-            "role": user.role
-        }
-        access_token = create_access_token(data=token_data)
-        refresh_token = create_refresh_token(data=token_data)
-        
-        return {
-            "access_token": access_token, 
-            "refresh_token": refresh_token, 
-            "token_type": "bearer"
-        }
-
-    except ValueError as e:
-        # Token inválido
-        print(f"❌ Error verificando token de Google: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Google Token"
-        )
-    except Exception as e:
-        print(f"❌ Error inesperado en Google Auth: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 

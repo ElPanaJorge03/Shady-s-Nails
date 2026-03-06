@@ -65,12 +65,6 @@ export class AuthService {
         return this.http.post(`${this.apiUrl}/reset-password`, data);
     }
 
-    googleLogin(id_token: string): Observable<User> {
-        return this.http.post<LoginResponse>(`${this.apiUrl}/google`, { id_token }).pipe(
-            tap(response => localStorage.setItem('access_token', response.access_token)),
-            switchMap(() => this.loadCurrentUser())
-        );
-    }
 
     logout(): void {
         localStorage.removeItem('access_token');
